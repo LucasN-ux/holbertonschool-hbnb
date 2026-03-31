@@ -243,10 +243,14 @@ function checkAuthentication() {
     const token = getCookie('token');
     const loginLink = document.getElementById('login-link');
 
+    const registerLink = document.getElementById('register-link');
+
     if (!token) {
         loginLink.style.display = 'block';
+        if (registerLink) registerLink.style.display = 'inline-block';
     } else {
         loginLink.outerHTML = '<button class="login-button" onclick="logout()">Logout</button>';
+        if (registerLink) registerLink.style.display = 'none';
     }
 
     const addPlaceBtn = document.getElementById('add-place-btn');
@@ -310,6 +314,36 @@ function initReviewForm() {
 
         const response = await submitReview(token, placeId, reviewText, rating);
         handleResponse(response, reviewForm);
+    });
+}
+
+function initRegisterForm() {
+    const form = document.getElementById('register-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const data = {
+            first_name: document.getElementById('first_name').value,
+            last_name: document.getElementById('last_name').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        };
+
+        const response = await fetch('http://127.0.0.1:5000/api/v1/users/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert('Account created! You can now login.');
+            window.location.href = 'login.html';
+        } else {
+            const err = await response.json();
+            alert('Error: ' + (err.error || 'Registration failed'));
+        }
     });
 }
 
@@ -391,4 +425,5 @@ document.addEventListener("DOMContentLoaded", function () {
     initLogin();
     initReviewForm();
     initAddPlaceForm();
+    initRegisterForm();
 });
