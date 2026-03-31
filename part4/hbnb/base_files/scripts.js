@@ -85,19 +85,29 @@ function initPriceFilter() {
 }
 
 
+function getPlaceIdFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("id");
+}
+
 async function initPlaceDetails() {
     const container = document.getElementById("place-details");
     if (!container) return;
 
-    const params = new URLSearchParams(window.location.search);
-    const placeId = params.get("id");
+    const placeId = getPlaceIdFromURL();
+    const token = getCookie('token');
 
     if (!placeId) {
         container.innerHTML = "<p>No place selected.</p>";
         return;
     }
 
-    const response = await fetch(`http://127.0.0.1:5000/api/v1/places/${placeId}`);
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`http://127.0.0.1:5000/api/v1/places/${placeId}`, { headers });
 
     if (!response.ok) {
         container.innerHTML = "<p>Place not found.</p>";
@@ -161,27 +171,19 @@ function renderAddReviewButton() {
     const container = document.getElementById("add-review-button");
     if (!container) return;
 
-    const params = new URLSearchParams(window.location.search);
-    const placeId = params.get("id");
+    const placeId = getPlaceIdFromURL();
+    const token = getCookie('token');
 
-    // ❌ pas d'id → on cache le bouton
-    if (!placeId) {
-        container.innerHTML = "";
+    if (!placeId || !token) {
+        container.style.display = 'none';
         return;
     }
 
-    // simulation login
-    const isLoggedIn = true;
-
-    if (isLoggedIn) {
-        container.innerHTML = `
-            <a href="add_review.html" class="login-button">
-                Add Review
-            </a>
-        `;
-    } else {
-        container.innerHTML = "";
-    }
+    container.innerHTML = `
+        <a href="add_review.html?id=${placeId}" class="login-button">
+            Add Review
+        </a>
+    `;
 }
 
 function initLogin() {
