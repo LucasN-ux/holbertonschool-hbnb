@@ -13,6 +13,7 @@ class Place(BaseModel):
     price = db.Column(db.Float, nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
+    photo_url = db.Column(db.String(500), nullable=True)
 
     owner_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
 
@@ -23,7 +24,7 @@ class Place(BaseModel):
     amenities = db.relationship('Amenity', secondary=place_amenity, backref=db.backref('places', lazy=True),lazy=True)
 
     def __init__(self, title: str, description: str = None, price: float = 0.0,
-                 latitude: float = 0.0, longitude: float = 0.0, owner=None):
+                 latitude: float = 0.0, longitude: float = 0.0, owner=None, photo_url: str = None):
 
         if not title or len(title) > 100:
             raise ValueError("Invalid title")
@@ -40,6 +41,7 @@ class Place(BaseModel):
         self.latitude = latitude
         self.longitude = longitude
         self.owner = owner
+        self.photo_url = photo_url
 
     def add_review(self, review):
         self.reviews.append(review)

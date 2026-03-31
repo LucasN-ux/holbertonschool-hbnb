@@ -129,7 +129,8 @@ class HBnBFacade:
             price=place_data["price"],
             latitude=place_data["latitude"],
             longitude=place_data["longitude"],
-            owner=owner
+            owner=owner,
+            photo_url=place_data.get("photo_url")
         )
 
         amenities_ids = place_data.get("amenities", [])

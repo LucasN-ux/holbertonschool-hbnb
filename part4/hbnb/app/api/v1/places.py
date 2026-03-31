@@ -34,6 +34,7 @@ place_create_model = api.model('PlaceCreate', {
     'latitude': fields.Float(required=True, description='Latitude of the place'),
     'longitude': fields.Float(required=True, description='Longitude of the place'),
     'amenities': fields.List(fields.String, required=False, description="List of amenities IDs"),
+    'photo_url': fields.String(required=False, description='URL of the place photo'),
 })
 
 # Model for updating a place
@@ -91,6 +92,7 @@ class PlaceList(Resource):
                 "id": p.id,
                 "title": p.title,
                 "price": p.price,
+                "photo_url": p.photo_url,
                 "latitude": p.latitude,
                 "longitude": p.longitude,
                 "owner": {
@@ -127,6 +129,7 @@ class PlaceResource(Resource):
             "title": place.title,
             "description": place.description,
             "price": place.price,
+            "photo_url": place.photo_url,
             "latitude": place.latitude,
             "longitude": place.longitude,
             "owner": {

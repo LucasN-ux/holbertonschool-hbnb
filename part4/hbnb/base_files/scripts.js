@@ -49,6 +49,7 @@ function displayPlaces(places) {
         card.dataset.price = place.price || 0;
 
         card.innerHTML = `
+            ${place.photo_url ? `<img src="${place.photo_url}" alt="${place.title}" style="width:100%;border-radius:8px;margin-bottom:0.75rem;object-fit:cover;height:160px;">` : ''}
             <h2>${place.title}</h2>
             <p>Price per night: $${place.price ?? 'N/A'}</p>
             <a href="place.html?id=${place.id}">View Details</a>
@@ -118,6 +119,7 @@ async function initPlaceDetails() {
 
     container.innerHTML = `
         <section class="place-details">
+            ${place.photo_url ? `<img src="${place.photo_url}" alt="${place.title}" style="width:100%;border-radius:12px;margin-bottom:1.5rem;object-fit:cover;max-height:350px;">` : ''}
             <h1>${place.title}</h1>
             <div class="place-info">
                 <p><strong>Host:</strong> ${place.owner.first_name} ${place.owner.last_name}</p>
@@ -247,6 +249,11 @@ function checkAuthentication() {
         loginLink.outerHTML = '<button class="login-button" onclick="logout()">Logout</button>';
     }
 
+    const addPlaceBtn = document.getElementById('add-place-btn');
+    if (addPlaceBtn) {
+        addPlaceBtn.style.display = token ? 'inline-block' : 'none';
+    }
+
     fetchPlaces(token);
 }
 
@@ -306,6 +313,75 @@ function initReviewForm() {
     });
 }
 
+function initAddPlaceForm() {
+    const form = document.getElementById('add-place-form');
+    if (!form) return;
+
+    const token = protectPage();
+
+    // Photo preview
+    document.getElementById('photo').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const preview = document.getElementById('photo-preview');
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+    });
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        let photo_url = null;
+
+        // Upload photo if selected
+        const photoFile = document.getElementById('photo').files[0];
+        if (photoFile) {
+            const formData = new FormData();
+            formData.append('photo', photoFile);
+
+            const uploadRes = await fetch('http://127.0.0.1:5000/api/v1/upload', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            if (!uploadRes.ok) {
+                alert('Photo upload failed');
+                return;
+            }
+
+            const uploadData = await uploadRes.json();
+            photo_url = uploadData.photo_url;
+        }
+
+        const placeData = {
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            price: parseFloat(document.getElementById('price').value),
+            latitude: parseFloat(document.getElementById('latitude').value),
+            longitude: parseFloat(document.getElementById('longitude').value),
+            photo_url: photo_url
+        };
+
+        const response = await fetch('http://127.0.0.1:5000/api/v1/places/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(placeData)
+        });
+
+        if (response.ok) {
+            alert('Place added successfully!');
+            window.location.href = 'index.html';
+        } else {
+            const err = await response.json();
+            alert('Error: ' + (err.error || 'Failed to add place'));
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     loadHeaderFooter();
     initPriceFilter();
@@ -314,4 +390,5 @@ document.addEventListener("DOMContentLoaded", function () {
     renderAddReviewButton();
     initLogin();
     initReviewForm();
+    initAddPlaceForm();
 });
