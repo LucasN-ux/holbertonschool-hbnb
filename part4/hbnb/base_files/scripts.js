@@ -255,19 +255,63 @@ function checkAuthentication() {
 function protectPage() {
     const token = getCookie('token');
     if (!token) {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
+    }
+    return token;
+}
+
+async function submitReview(token, placeId, reviewText, rating) {
+    const response = await fetch('http://127.0.0.1:5000/api/v1/reviews/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: reviewText, rating: parseInt(rating), place_id: placeId })
+    });
+    return response;
+}
+
+function handleResponse(response, form) {
+    if (response.ok) {
+        alert('Review submitted successfully!');
+        form.reset();
+    } else {
+        alert('Failed to submit review');
     }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    if (document.getElementById('review-form')) {
-        protectPage();
+function initReviewForm() {
+    const reviewForm = document.getElementById('review-form');
+    if (!reviewForm) return;
+
+    const token = protectPage();
+    const placeId = getPlaceIdFromURL();
+
+    const ratingSelect = document.getElementById('rating');
+    for (let i = 1; i <= 5; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `${i} Star${i > 1 ? 's' : ''}`;
+        ratingSelect.appendChild(option);
     }
 
+    reviewForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const reviewText = document.getElementById('review').value;
+        const rating = document.getElementById('rating').value;
+
+        const response = await submitReview(token, placeId, reviewText, rating);
+        handleResponse(response, reviewForm);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
     loadHeaderFooter();
     initPriceFilter();
     initPlaceDetails();
     renderReviews();
     renderAddReviewButton();
     initLogin();
+    initReviewForm();
 });
