@@ -49,10 +49,14 @@ function displayPlaces(places) {
         card.dataset.price = place.price || 0;
 
         card.innerHTML = `
-            ${place.photo_url ? `<img src="${place.photo_url}" alt="${place.title}" style="width:100%;border-radius:8px;margin-bottom:0.75rem;object-fit:cover;height:160px;">` : ''}
-            <h2>${place.title}</h2>
-            <p>Price per night: $${place.price ?? 'N/A'}</p>
-            <a href="place.html?id=${place.id}">View Details</a>
+            ${place.photo_url
+                ? `<img src="${place.photo_url}" alt="${place.title}">`
+                : `<div class="place-card-no-photo">🏠</div>`}
+            <div class="place-card-body">
+                <h2>${place.title}</h2>
+                <p class="price">$${place.price ?? 'N/A'} <span>/ night</span></p>
+                <a href="place.html?id=${place.id}">View Details</a>
+            </div>
         `;
 
         container.appendChild(card);
@@ -118,16 +122,27 @@ async function initPlaceDetails() {
     const place = await response.json();
 
     container.innerHTML = `
-        <section class="place-details">
-            ${place.photo_url ? `<img src="${place.photo_url}" alt="${place.title}" style="width:100%;border-radius:12px;margin-bottom:1.5rem;object-fit:cover;max-height:350px;">` : ''}
+        ${place.photo_url
+            ? `<img src="${place.photo_url}" alt="${place.title}" class="place-details-img">`
+            : `<div class="place-details-no-photo">🏠</div>`}
+        <div class="place-details-header">
             <h1>${place.title}</h1>
-            <div class="place-info">
-                <p><strong>Host:</strong> ${place.owner.first_name} ${place.owner.last_name}</p>
-                <p><strong>Price:</strong> $${place.price}/night</p>
-                <p><strong>Description:</strong> ${place.description}</p>
-                <p><strong>Amenities:</strong> ${place.amenities.map(a => a.name).join(', ') || 'None'}</p>
+        </div>
+        <div class="place-info-grid">
+            <div class="place-info-card">
+                <div class="label">Host</div>
+                <div class="value">${place.owner.first_name} ${place.owner.last_name}</div>
             </div>
-        </section>
+            <div class="place-info-card">
+                <div class="label">Price per night</div>
+                <div class="value">$${place.price}</div>
+            </div>
+            <div class="place-info-card">
+                <div class="label">Amenities</div>
+                <div class="value">${place.amenities.map(a => a.name).join(', ') || 'None'}</div>
+            </div>
+        </div>
+        <div class="place-description">${place.description || 'No description provided.'}</div>
     `;
 }
 
@@ -156,13 +171,24 @@ async function renderReviews() {
         return;
     }
 
+    const title = document.createElement('h2');
+    title.className = 'section-title';
+    title.textContent = `Reviews (${reviews.length})`;
+    container.appendChild(title);
+
     reviews.forEach(review => {
+        const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
         const card = document.createElement("article");
         card.className = "review-card";
 
         card.innerHTML = `
-            <p><strong>Rating:</strong> ${review.rating}/5</p>
-            <p>${review.text}</p>
+            <div class="review-header">
+                <div class="review-avatar">G</div>
+                <div>
+                    <div class="review-stars">${stars}</div>
+                </div>
+            </div>
+            <p class="review-text">${review.text}</p>
         `;
 
         container.appendChild(card);
@@ -244,9 +270,9 @@ function checkAuthentication() {
     const loginLink = document.getElementById('login-link');
 
     if (!token) {
-        loginLink.style.display = 'block';
+        loginLink.style.display = 'inline-flex';
     } else {
-        loginLink.outerHTML = '<button class="login-button" onclick="logout()">Logout</button>';
+        loginLink.outerHTML = '<button class="btn-primary" onclick="logout()">Logout</button>';
     }
 
     const addPlaceBtn = document.getElementById('add-place-btn');
