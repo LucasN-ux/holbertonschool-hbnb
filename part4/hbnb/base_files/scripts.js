@@ -252,7 +252,18 @@ function checkAuthentication() {
 
 
 
+function protectPage() {
+    const token = getCookie('token');
+    if (!token) {
+        window.location.href = 'login.html';
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+    if (document.getElementById('review-form')) {
+        protectPage();
+    }
+
     loadHeaderFooter();
     initPriceFilter();
     initPlaceDetails();
