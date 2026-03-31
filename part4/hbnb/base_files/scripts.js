@@ -4,7 +4,7 @@
 */
 
 function load(id, file) {
-    fetch(file)
+    return fetch(file)
     .then(res => res.text())
     .then(data => {
         document.getElementById(id).innerHTML = data;
@@ -12,121 +12,145 @@ function load(id, file) {
 }
 
 function loadHeaderFooter(){
-    load("header", "header.html");
+    load("header", "header.html").then(() => {
+        checkAuthentication();
+    });
     load("footer", "footer.html");
 }
 
-function initPlacesPage() {
-    const container = document.getElementById("places-list");
+let allPlaces = [];
+
+async function fetchPlaces(token) {
+    const container = document.getElementById('places-list');
     if (!container) return;
 
-    // Exemple statique (plus tard API)
-    const places = [
-        { id: 1, name: "Place 1", price: 100 },
-        { id: 2, name: "Place 2", price: 150 }
-    ];
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch('http://127.0.0.1:5000/api/v1/places/', { headers });
+
+    if (response.ok) {
+        allPlaces = await response.json();
+        displayPlaces(allPlaces);
+    }
+}
+
+function displayPlaces(places) {
+    const container = document.getElementById('places-list');
+    if (!container) return;
+
+    container.innerHTML = '';
 
     places.forEach(place => {
-        const card = document.createElement("article");
-        card.className = "place-card";
+        const card = document.createElement('article');
+        card.className = 'place-card';
+        card.dataset.price = place.price || 0;
 
         card.innerHTML = `
-        <h2>${place.name}</h2>
-        <p>Price: $${place.price}/night</p>
-        <a href="place.html?id=${place.id}">View Details</a>
+            <h2>${place.title}</h2>
+            <p>Price per night: $${place.price ?? 'N/A'}</p>
+            <a href="place.html?id=${place.id}">View Details</a>
         `;
 
         container.appendChild(card);
     });
 }
 
-function initPlaceDetails() {
+function initPriceFilter() {
+    const filter = document.getElementById('price-filter');
+    if (!filter) return;
+
+    filter.innerHTML = `
+        <option value="all">All</option>
+        <option value="50">$50</option>
+        <option value="100">$100</option>
+        <option value="150">$150</option>
+        <option value="200">$200</option>
+    `;
+
+    filter.addEventListener('change', (event) => {
+        const max = event.target.value;
+        const cards = document.querySelectorAll('.place-card');
+
+        cards.forEach(card => {
+            if (max === 'all' || Number(card.dataset.price) <= Number(max)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+}
+
+
+async function initPlaceDetails() {
     const container = document.getElementById("place-details");
     if (!container) return;
-    
-    // Exemple de données (plus tard API)
-    const places = [
-    {
-        id: 1,
-        name: "Place 1",
-        host: "John Doe",
-        price: 100,
-        description: "Nice place in the city",
-        amenities: ["WiFi", "Kitchen", "AC"]
-    },
-    {
-        id: 2,
-        name: "Place 2",
-        host: "Jane Smith",
-        price: 150,
-        description: "Big apartment",
-        amenities: ["WiFi", "Pool"]
-    }
-    ];
 
-    // Récupérer l'id depuis l'URL
     const params = new URLSearchParams(window.location.search);
-    const id = parseInt(params.get("id"));
+    const placeId = params.get("id");
 
-    const place = places.find(p => p.id === id);
-    if (!place) {
-    container.innerHTML = "<p>No places selected</p>";
-    return;
+    if (!placeId) {
+        container.innerHTML = "<p>No place selected.</p>";
+        return;
     }
+
+    const response = await fetch(`http://127.0.0.1:5000/api/v1/places/${placeId}`);
+
+    if (!response.ok) {
+        container.innerHTML = "<p>Place not found.</p>";
+        return;
+    }
+
+    const place = await response.json();
 
     container.innerHTML = `
-    <section class="place-details">
-        <h1>${place.name}</h1>
-
-        <div class="place-info">
-        <p><strong>Host:</strong> ${place.host}</p>
-        <p><strong>Price:</strong> $${place.price}/night</p>
-        <p><strong>Description:</strong> ${place.description}</p>
-        <p><strong>Amenities:</strong> ${place.amenities.join(", ")}</p>
-        </div>
-    </section>
+        <section class="place-details">
+            <h1>${place.title}</h1>
+            <div class="place-info">
+                <p><strong>Host:</strong> ${place.owner.first_name} ${place.owner.last_name}</p>
+                <p><strong>Price:</strong> $${place.price}/night</p>
+                <p><strong>Description:</strong> ${place.description}</p>
+                <p><strong>Amenities:</strong> ${place.amenities.map(a => a.name).join(', ') || 'None'}</p>
+            </div>
+        </section>
     `;
 }
 
-function renderReviews() {
+async function renderReviews() {
     const container = document.getElementById("reviews");
     if (!container) return;
 
     const params = new URLSearchParams(window.location.search);
-    const placeId = Number(params.get("id"));
+    const placeId = params.get("id");
 
-    const reviews = [
-        {
-        place_id: 1,
-        user: "Alice",
-        rating: 5,
-        comment: "Amazing place!"
-        },
-        {
-        place_id: 2,
-        user: "Bob",
-        rating: 4,
-        comment: "Very clean and nice."
-        }
-    ];
+    if (!placeId) return;
 
-    const filteredReviews = reviews.filter(r => r.place_id === placeId);
+    const response = await fetch(`http://127.0.0.1:5000/api/v1/places/${placeId}/reviews`);
 
     container.innerHTML = "";
-    
-    if (filteredReviews.length === 0) {
+
+    if (!response.ok) {
         container.innerHTML = "<p>No reviews yet.</p>";
         return;
     }
 
-    filteredReviews.forEach(review => {
+    const reviews = await response.json();
+
+    if (reviews.length === 0) {
+        container.innerHTML = "<p>No reviews yet.</p>";
+        return;
+    }
+
+    reviews.forEach(review => {
         const card = document.createElement("article");
         card.className = "review-card";
 
         card.innerHTML = `
-        <p><strong>User:</strong> ${review.user}</p>
-        <p><strong>Rating:</strong> ${review.rating}/5</p>
-        <p>${review.comment}</p>
+            <p><strong>Rating:</strong> ${review.rating}/5</p>
+            <p>${review.text}</p>
         `;
 
         container.appendChild(card);
@@ -160,10 +184,77 @@ function renderAddReviewButton() {
     }
 }
 
+function initLogin() {
+    const loginForm = document.getElementById('login-form');
+
+    async function loginUser(email, password) {
+        const response = await fetch('http://127.0.0.1:5000/api/v1/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        return response;
+    }
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const response = await loginUser(email, password);
+
+            if (response.ok) {
+                const data = await response.json();
+
+                document.cookie = `token=${data.access_token}; path=/`;
+
+                window.location.href = 'index.html';
+            } else {
+                alert('Login failed: ' + response.statusText);
+            }
+        });
+    }
+}
+
+function getCookie(name) {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [key, value] = cookie.trim().split('=');
+        if (key === name) return value;
+    }
+    return null;
+}
+
+function logout() {
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    window.location.href = 'login.html';
+}
+
+function checkAuthentication() {
+    const token = getCookie('token');
+    const loginLink = document.getElementById('login-link');
+
+    if (!token) {
+        loginLink.style.display = 'block';
+    } else {
+        loginLink.outerHTML = '<button class="login-button" onclick="logout()">Logout</button>';
+    }
+
+    fetchPlaces(token);
+}
+
+
+
 document.addEventListener("DOMContentLoaded", function () {
     loadHeaderFooter();
-    initPlacesPage();
+    initPriceFilter();
     initPlaceDetails();
     renderReviews();
     renderAddReviewButton();
+    initLogin();
 });
