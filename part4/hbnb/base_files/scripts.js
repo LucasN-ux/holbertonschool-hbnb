@@ -272,7 +272,10 @@ function checkAuthentication() {
     if (!token) {
         loginLink.style.display = 'inline-flex';
     } else {
-        loginLink.outerHTML = '<button class="btn-primary" onclick="logout()">Logout</button>';
+        loginLink.outerHTML = `
+            <a href="profile.html" class="btn-outline">My Profile</a>
+            <button class="btn-primary" onclick="logout()">Logout</button>
+        `;
     }
 
     const addPlaceBtn = document.getElementById('add-place-btn');
@@ -391,6 +394,71 @@ function initRegisterForm() {
     });
 }
 
+function getTokenPayload(token) {
+    try {
+        const payload = token.split('.')[1];
+        return JSON.parse(atob(payload));
+    } catch {
+        return null;
+    }
+}
+
+async function initProfileForm() {
+    const form = document.getElementById('profile-form');
+    if (!form) return;
+
+    const token = protectPage();
+    const payload = getTokenPayload(token);
+    const userId = payload?.sub;
+
+    if (!userId) {
+        alert('Invalid session. Please login again.');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Prefill avec les données actuelles
+    const response = await fetch(`http://127.0.0.1:5000/api/v1/users/${userId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+        const user = await response.json();
+        document.getElementById('first_name').value = user.first_name;
+        document.getElementById('last_name').value = user.last_name;
+
+        const avatar = document.getElementById('profile-avatar');
+        const fullname = document.getElementById('profile-fullname');
+        if (avatar) avatar.textContent = (user.first_name[0] + user.last_name[0]).toUpperCase();
+        if (fullname) fullname.textContent = `${user.first_name} ${user.last_name}`;
+    }
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const data = {
+            first_name: document.getElementById('first_name').value,
+            last_name: document.getElementById('last_name').value
+        };
+
+        const res = await fetch(`http://127.0.0.1:5000/api/v1/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            alert('Profile updated successfully!');
+        } else {
+            const err = await res.json();
+            alert('Error: ' + (err.error || 'Update failed'));
+        }
+    });
+}
+
 function initAddPlaceForm() {
     const form = document.getElementById('add-place-form');
     if (!form) return;
@@ -470,4 +538,5 @@ document.addEventListener("DOMContentLoaded", function () {
     initReviewForm();
     initAddPlaceForm();
     initRegisterForm();
+    initProfileForm();
 });

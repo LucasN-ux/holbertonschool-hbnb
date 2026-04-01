@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="header"></div>
+    <main>
+        <div class="profile-page">
+
+            <div class="profile-sidebar">
+                <div class="profile-avatar" id="profile-avatar">?</div>
+                <p class="profile-name" id="profile-fullname">Loading...</p>
+                <p class="profile-since">Member since 2026</p>
+            </div>
+
+            <div class="profile-content">
+                <h1 class="profile-title">Personal information</h1>
+                <p class="profile-subtitle">Update your name below. Email changes must be done by an admin.</p>
+
+                <form id="profile-form">
+                    <div class="profile-field-group">
+                        <div class="profile-field">
+                            <label for="first_name">First Name</label>
+                            <input type="text" id="first_name" name="first_name" placeholder="First name" required>
+                        </div>
+                        <div class="profile-field">
+                            <label for="last_name">Last Name</label>
+                            <input type="text" id="last_name" name="last_name" placeholder="Last name" required>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button type="submit" class="btn-save">Save changes</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </main>
+    <div id="footer"></div>
+    <script src="scripts.js"></script>
+</body>
+</html>
