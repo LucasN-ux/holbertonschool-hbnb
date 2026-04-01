@@ -108,9 +108,9 @@ class UserResource(Resource):
         if not is_admin and user_id != current_user:
             return {'error': 'Unauthorized action'}, 403
 
-        # Normal users cannot modify email or password
-        if not is_admin and ('email' in new_data or 'password' in new_data):
-            return {'error': 'You cannot modify email or password.'}, 400
+        # Normal users cannot modify email, password or is_admin
+        if not is_admin and ('email' in new_data or 'password' in new_data or 'is_admin' in new_data):
+            return {'error': 'You cannot modify email, password or admin status.'}, 400
 
         # If email is being changed, ensure uniqueness
         email = new_data.get('email')
