@@ -28,23 +28,32 @@ review_model = api.model('PlaceReview', {
 
 # Model for creating a place
 place_create_model = api.model('PlaceCreate', {
-    'title': fields.String(required=True, description='Title of the place'),
-    'description': fields.String(description='Description of the place'),
+    'title': fields.String(required=True, description='Title'),
+    'description': fields.String(description='Description'),
     'price': fields.Float(required=True, description='Price per night'),
-    'latitude': fields.Float(required=True, description='Latitude of the place'),
-    'longitude': fields.Float(required=True, description='Longitude of the place'),
-    'amenities': fields.List(fields.String, required=False, description="List of amenities IDs"),
-    'photo_url': fields.String(required=False, description='URL of the place photo'),
+    'latitude': fields.Float(required=True, description='Latitude'),
+    'longitude': fields.Float(required=True, description='Longitude'),
+    'amenities': fields.List(
+        fields.String, required=False,
+        description="List of amenity IDs"
+    ),
+    'photos': fields.String(
+        required=False,
+        description='JSON array of photo URLs'
+    ),
 })
 
 # Model for updating a place
 place_update_model = api.model('PlaceUpdate', {
-    'title': fields.String(description='Title of the place'),
-    'description': fields.String(description='Description of the place'),
+    'title': fields.String(description='Title'),
+    'description': fields.String(description='Description'),
     'price': fields.Float(description='Price per night'),
-    'latitude': fields.Float(description='Latitude of the place'),
-    'longitude': fields.Float(description='Longitude of the place'),
-    'amenities': fields.List(fields.String, required=False, description="List of amenities IDs"),
+    'latitude': fields.Float(description='Latitude'),
+    'longitude': fields.Float(description='Longitude'),
+    'amenities': fields.List(
+        fields.String, required=False,
+        description="List of amenity IDs"
+    ),
 })
 
 
@@ -92,7 +101,7 @@ class PlaceList(Resource):
                 "id": p.id,
                 "title": p.title,
                 "price": p.price,
-                "photo_url": p.photo_url,
+                "photos": p.photos,
                 "latitude": p.latitude,
                 "longitude": p.longitude,
                 "owner": {
@@ -129,7 +138,7 @@ class PlaceResource(Resource):
             "title": place.title,
             "description": place.description,
             "price": place.price,
-            "photo_url": place.photo_url,
+            "photos": place.photos,
             "latitude": place.latitude,
             "longitude": place.longitude,
             "owner": {
@@ -218,7 +227,10 @@ class PlaceAmenityList(Resource):
     @jwt_required()
     @api.doc(security='Bearer Auth')
     @api.expect(api.model('PlaceAmenityUpdate', {
-        'amenity_ids': fields.List(fields.String, required=True, description='List of amenity IDs to associate')
+        'amenity_ids': fields.List(
+            fields.String, required=True,
+            description='List of amenity IDs'
+        )
     }), validate=True)
     @api.response(200, 'Amenities associated successfully')
     @api.response(404, 'Place or amenity not found')
@@ -236,12 +248,15 @@ class PlaceAmenityList(Resource):
 
         amenity_ids = api.payload.get('amenity_ids', [])
         try:
-            updated_place = facade.add_amenities_to_place(place_id, amenity_ids)
+            updated = facade.add_amenities_to_place(
+                place_id, amenity_ids
+            )
             return {
-                "id": updated_place.id,
-                "title": updated_place.title,
+                "id": updated.id,
+                "title": updated.title,
                 "amenities": [
-                    {"id": a.id, "name": a.name} for a in updated_place.amenities
+                    {"id": a.id, "name": a.name}
+                    for a in updated.amenities
                 ]
             }, 200
         except ValueError as e:

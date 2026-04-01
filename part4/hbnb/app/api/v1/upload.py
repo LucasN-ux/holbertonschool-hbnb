@@ -18,23 +18,28 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@upload_bp.route('/api/v1/upload', methods=['POST'])
-@jwt_required()
-def upload_photo():
-    if 'photo' not in request.files:
-        return jsonify({'error': 'No file provided'}), 400
-
-    file = request.files['photo']
-
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
-
-    if not allowed_file(file.filename):
-        return jsonify({'error': 'File type not allowed'}), 400
-
+def save_file(file):
     ext = file.filename.rsplit('.', 1)[1].lower()
     filename = f"{uuid.uuid4().hex}.{ext}"
     filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
+    return f'http://127.0.0.1:8000/uploads/{filename}'
 
-    return jsonify({'photo_url': f'http://127.0.0.1:8000/uploads/{filename}'}), 201
+
+@upload_bp.route('/api/v1/upload', methods=['POST'])
+@jwt_required()
+def upload_photos():
+    files = request.files.getlist('photos[]')
+
+    if not files or all(f.filename == '' for f in files):
+        return jsonify({'error': 'No files provided'}), 400
+
+    urls = []
+    for file in files:
+        if file and file.filename != '' and allowed_file(file.filename):
+            urls.append(save_file(file))
+
+    if not urls:
+        return jsonify({'error': 'No valid files'}), 400
+
+    return jsonify({'photo_urls': urls}), 201

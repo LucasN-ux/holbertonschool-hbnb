@@ -130,7 +130,7 @@ class HBnBFacade:
             latitude=place_data["latitude"],
             longitude=place_data["longitude"],
             owner=owner,
-            photo_url=place_data.get("photo_url")
+            photos=place_data.get("photos")
         )
 
         amenities_ids = place_data.get("amenities", [])
@@ -164,7 +164,11 @@ class HBnBFacade:
                 place.add_amenity(amenity)
 
         clean_data = {}
-        for key in ["title", "description", "price", "latitude", "longitude"]:
+        updatable = [
+            "title", "description", "price",
+            "latitude", "longitude", "photos"
+        ]
+        for key in updatable:
             if key in place_data:
                 clean_data[key] = place_data[key]
                 setattr(place, key, place_data[key])
@@ -211,7 +215,11 @@ class HBnBFacade:
             return None
 
         reviews = self.review_repo.get_all()
-        return [review for review in reviews if getattr(review, 'place', None) and review.place.id == place_id]
+        return [
+            review for review in reviews
+            if getattr(review, 'place', None)
+            and review.place.id == place_id
+        ]
 
     def update_review(self, review_id, review_data):
         review = self.review_repo.get(review_id)

@@ -654,6 +654,193 @@ form p a {
     }
 }
 
+/* ── ADD PLACE PAGE ── */
+.add-place-page {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.form-section {
+    background: var(--white);
+    border: 1px solid var(--light-gray);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.form-section-desc {
+    font-size: 0.875rem;
+    color: var(--gray);
+    margin-bottom: 1rem;
+    margin-top: -0.75rem;
+}
+
+.form-row {
+    margin-bottom: 1rem;
+}
+
+.form-row.two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+/* Amenities */
+.amenities-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.amenity-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1.5px solid var(--light-gray);
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.amenity-checkbox:hover {
+    border-color: var(--dark);
+}
+
+.amenity-checkbox input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    accent-color: var(--primary);
+}
+
+.amenity-checkbox input[type="checkbox"]:checked + span {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.amenity-checkbox:has(input:checked) {
+    border-color: var(--primary);
+    background: #FFF0F2;
+}
+
+/* Photo upload */
+.photo-upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 2px dashed var(--light-gray);
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    text-align: center;
+}
+
+.photo-upload-area:hover {
+    border-color: var(--primary);
+    background: #FFF8F9;
+}
+
+.photo-upload-icon {
+    font-size: 2.5rem;
+}
+
+.photo-upload-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.photo-upload-hint {
+    font-size: 0.8rem;
+    color: var(--gray);
+}
+
+.photo-previews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.photo-preview-item img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--light-gray);
+}
+
+.form-submit-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 2rem;
+}
+
+.loading-text {
+    color: var(--gray);
+    font-size: 0.875rem;
+}
+
+/* ── PLACE GALLERY ── */
+.place-photos-gallery {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 220px 220px;
+    gap: 0.5rem;
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.gallery-main {
+    grid-row: 1 / 3;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gallery-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@media (max-width: 768px) {
+    .form-row.two-cols {
+        grid-template-columns: 1fr;
+    }
+
+    .place-photos-gallery {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+
+    .gallery-main {
+        grid-row: auto;
+    }
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
     header {

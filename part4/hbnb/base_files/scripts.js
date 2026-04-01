@@ -48,9 +48,13 @@ function displayPlaces(places) {
         card.className = 'place-card';
         card.dataset.price = place.price || 0;
 
+        const firstPhoto = place.photos
+            ? JSON.parse(place.photos)[0]
+            : null;
+
         card.innerHTML = `
-            ${place.photo_url
-                ? `<img src="${place.photo_url}" alt="${place.title}">`
+            ${firstPhoto
+                ? `<img src="${firstPhoto}" alt="${place.title}">`
                 : `<div class="place-card-no-photo">🏠</div>`}
             <div class="place-card-body">
                 <h2>${place.title}</h2>
@@ -121,9 +125,11 @@ async function initPlaceDetails() {
 
     const place = await response.json();
 
+    const placePhotos = place.photos ? JSON.parse(place.photos) : [];
+
     container.innerHTML = `
-        ${place.photo_url
-            ? `<img src="${place.photo_url}" alt="${place.title}" class="place-details-img">`
+        ${placePhotos.length > 0
+            ? `<div class="place-photos-gallery">${placePhotos.map((url, i) => `<img src="${url}" alt="${place.title} photo ${i+1}" class="${i === 0 ? 'gallery-main' : 'gallery-thumb'}">`).join('')}</div>`
             : `<div class="place-details-no-photo">🏠</div>`}
         <div class="place-details-header">
             <h1>${place.title}</h1>
@@ -459,31 +465,57 @@ async function initProfileForm() {
     });
 }
 
-function initAddPlaceForm() {
+async function initAddPlaceForm() {
     const form = document.getElementById('add-place-form');
     if (!form) return;
 
     const token = protectPage();
 
-    // Photo preview
-    document.getElementById('photo').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const preview = document.getElementById('photo-preview');
-        preview.src = URL.createObjectURL(file);
-        preview.style.display = 'block';
+    // Load amenities
+    const amenitiesContainer = document.getElementById('amenities-list');
+    try {
+        const res = await fetch('http://127.0.0.1:5000/api/v1/amenities/', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const amenities = await res.json();
+            if (amenities.length === 0) {
+                amenitiesContainer.innerHTML = '<p class="loading-text">No amenities available.</p>';
+            } else {
+                amenitiesContainer.innerHTML = amenities.map(a => `
+                    <label class="amenity-checkbox">
+                        <input type="checkbox" name="amenities" value="${a.id}">
+                        <span>${a.name}</span>
+                    </label>
+                `).join('');
+            }
+        }
+    } catch {
+        amenitiesContainer.innerHTML = '<p class="loading-text">Could not load amenities.</p>';
+    }
+
+    // Photo previews
+    document.getElementById('photos').addEventListener('change', (e) => {
+        const previewGrid = document.getElementById('photo-previews');
+        previewGrid.innerHTML = '';
+        Array.from(e.target.files).forEach(file => {
+            const url = URL.createObjectURL(file);
+            const div = document.createElement('div');
+            div.className = 'photo-preview-item';
+            div.innerHTML = `<img src="${url}" alt="preview">`;
+            previewGrid.appendChild(div);
+        });
     });
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        let photo_url = null;
-
-        // Upload photo if selected
-        const photoFile = document.getElementById('photo').files[0];
-        if (photoFile) {
+        // Upload photos
+        let photos = [];
+        const photoFiles = document.getElementById('photos').files;
+        if (photoFiles.length > 0) {
             const formData = new FormData();
-            formData.append('photo', photoFile);
+            Array.from(photoFiles).forEach(f => formData.append('photos[]', f));
 
             const uploadRes = await fetch('http://127.0.0.1:5000/api/v1/upload', {
                 method: 'POST',
@@ -495,10 +527,14 @@ function initAddPlaceForm() {
                 alert('Photo upload failed');
                 return;
             }
-
             const uploadData = await uploadRes.json();
-            photo_url = uploadData.photo_url;
+            photos = uploadData.photo_urls;
         }
+
+        // Get selected amenities
+        const selectedAmenities = Array.from(
+            document.querySelectorAll('input[name="amenities"]:checked')
+        ).map(cb => cb.value);
 
         const placeData = {
             title: document.getElementById('title').value,
@@ -506,7 +542,8 @@ function initAddPlaceForm() {
             price: parseFloat(document.getElementById('price').value),
             latitude: parseFloat(document.getElementById('latitude').value),
             longitude: parseFloat(document.getElementById('longitude').value),
-            photo_url: photo_url
+            photos: photos.length > 0 ? JSON.stringify(photos) : null,
+            amenities: selectedAmenities
         };
 
         const response = await fetch('http://127.0.0.1:5000/api/v1/places/', {
