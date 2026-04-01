@@ -23,19 +23,6 @@ class HBnBFacade:
         self.review_repo = ReviewRepository()
         self.amenity_repo = AmenityRepository()
 
-    def bootstrap_admin(self):
-        """Create an admin user if not exists"""
-        admin_email = "admin@example.com"
-        if not self.get_user_by_email(admin_email):
-            admin = User(
-                first_name="Admin",
-                last_name="Boss",
-                email=admin_email,
-                is_admin=True
-            )
-            admin.hash_password("admin123")
-            self.user_repo.add(admin)
-
     def create_user(self, user_data, password):
         if not User.validate_email_format(user_data['email']):
             raise ValueError("Invalid email format")
