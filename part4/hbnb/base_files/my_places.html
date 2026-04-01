@@ -3,18 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Places</title>
+    <meta name="description" content="Manage the places you've listed on hbnb.">
+    <title>My Places — hbnb</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div id="header"></div>
-    <main>
+    <main id="main-content">
         <div class="my-places-header">
             <h1 class="page-title">My Places</h1>
             <a href="add_place.html" class="btn-new-place">+ Add a place</a>
         </div>
-        <div id="my-places-list" class="my-places-list">
-            <p class="loading-text">Loading your places...</p>
+        <div
+            id="my-places-list"
+            class="my-places-list"
+            aria-label="Your listed places"
+            aria-live="polite"
+            aria-busy="true"
+        >
+            <p class="loading-text">Loading your places…</p>
         </div>
     </main>
     <div id="footer"></div>

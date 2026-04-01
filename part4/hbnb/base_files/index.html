@@ -3,25 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>List of Places</title>
+    <meta name="description" content="hbnb — Find unique places to stay, hosted by real people around the world.">
+    <title>hbnb — Find your next stay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div id="header"></div>
 
-    <main>
-        <section id="filter">
-            <label for="price-filter">Max Price:</label>
-            <select id="price-filter">
-                <!-- Options will be populated dynamically -->
-            </select>
-        </section>
-        <section id="places-list"></section>
+    <!-- ── HERO ─────────────────────────────────────────── -->
+    <section class="s-hero" id="hero" aria-label="Welcome">
+        <div class="s-hero__inner">
+            <span class="s-hero__badge">
+                <span class="s-hero__badge-dot" aria-hidden="true"></span>
+                The new way to travel
+            </span>
+            <h1 class="s-hero__title">
+                Find your<br>next <em>stay.</em>
+            </h1>
+            <p class="s-hero__sub">
+                Unique places hosted by real people.<br>
+                Any budget, any destination.
+            </p>
+            <div class="s-hero__actions">
+                <a href="#main-content" class="btn-hero btn-hero--primary">Explore places</a>
+            </div>
+        </div>
+        <div class="s-hero__scroll" aria-hidden="true">
+            <div class="s-hero__scroll-chevron"></div>
+        </div>
+    </section>
+
+    <!-- ── FEATURES ──────────────────────────────────────── -->
+    <section class="s-features" id="features" aria-label="Why hbnb">
+        <div class="s-features__inner">
+            <p class="s-features__eyebrow" data-reveal>Why hbnb</p>
+            <h2 class="s-features__title" data-reveal="delay-1">
+                Travel<br>differently.
+            </h2>
+            <div class="s-features__grid">
+                <div class="s-feature" data-reveal="delay-1">
+                    <div class="s-feature__num">01</div>
+                    <h3>Unique stays</h3>
+                    <p>From city lofts to countryside hideaways — places you won't find anywhere else.</p>
+                </div>
+                <div class="s-feature" data-reveal="delay-2">
+                    <div class="s-feature__num">02</div>
+                    <h3>Real hosts</h3>
+                    <p>Connect with people who live and breathe their city. Local tips, real advice.</p>
+                </div>
+                <div class="s-feature" data-reveal="delay-3">
+                    <div class="s-feature__num">03</div>
+                    <h3>Any budget</h3>
+                    <p>Filter by price and amenities. Find your perfect match in seconds.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── MARQUEE CAROUSEL ──────────────────────────── -->
+    <section class="s-marquee" aria-hidden="true">
+        <div class="s-marquee__track">
+            <div class="s-marquee__inner" id="marquee-inner">
+                <!-- populated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ── EXPLORE ─────────────────────────────────────── -->
+    <main id="main-content" class="s-explore">
+        <div class="s-explore__inner">
+            <h2 class="s-explore__heading" data-reveal>Explore all places</h2>
+
+            <section id="filter" aria-label="Filter places by price">
+                <label for="price-filter">Max price</label>
+                <select id="price-filter" aria-label="Filter by maximum price per night">
+                    <!-- Options populated dynamically -->
+                </select>
+            </section>
+
+            <section
+                id="places-list"
+                aria-label="Available places"
+                aria-live="polite"
+                aria-busy="true"
+            ></section>
+        </div>
     </main>
 
     <div id="footer"></div>
-    
     <script src="scripts.js"></script>
-
 </body>
 </html>

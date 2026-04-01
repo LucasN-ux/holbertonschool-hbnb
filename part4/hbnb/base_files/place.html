@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Place Details</title>
+    <meta name="description" content="View details, photos, and reviews for this place on hbnb.">
+    <title>Place Details — hbnb</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div id="header"></div>
-    <main>
-        <section id="place-details"></section>
-        <section id="reviews"></section>
-        <section id="add-review-button"></section>
+    <main id="main-content">
+        <section id="place-details" aria-label="Place information" aria-live="polite" aria-busy="true"></section>
+        <section id="reviews" aria-label="Guest reviews" aria-live="polite"></section>
+        <section id="add-review-button" aria-label="Leave a review"></section>
     </main>
     <div id="footer"></div>
     <script src="scripts.js"></script>
-
 </body>
 </html>

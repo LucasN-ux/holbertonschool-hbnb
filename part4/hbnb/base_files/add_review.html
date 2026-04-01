@@ -3,20 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Review</title>
+    <meta name="description" content="Share your experience by leaving a review on hbnb.">
+    <title>Add a Review — hbnb</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div id="header"></div>
-    <main>
-        <!-- Add something to idfentify the place you're reviewing -->
-        <form id="review-form">
+    <main id="main-content">
+        <form id="review-form" novalidate aria-label="Review form">
             <h2>Add a Review</h2>
-            <label for="review">Your Review:</label>
-            <textarea id="review" name="review" required></textarea>
-            <label for="rating">Rating:</label>
-            <select id="rating" name="rating" required>
-                <!-- Options for rating -->
+            <label for="review">Your Review</label>
+            <textarea
+                id="review"
+                name="review"
+                placeholder="Share your experience…"
+                required
+                aria-required="true"
+                rows="5"
+            ></textarea>
+            <label for="rating">Rating</label>
+            <select id="rating" name="rating" required aria-required="true">
+                <!-- Options populated dynamically -->
             </select>
             <button type="submit">Submit Review</button>
         </form>

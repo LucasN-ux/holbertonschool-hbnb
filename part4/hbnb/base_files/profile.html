@@ -3,33 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile</title>
+    <meta name="description" content="Manage your personal information on hbnb.">
+    <title>My Profile — hbnb</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div id="header"></div>
-    <main>
+    <main id="main-content">
         <div class="profile-page">
 
-            <div class="profile-sidebar">
-                <div class="profile-avatar" id="profile-avatar">?</div>
-                <p class="profile-name" id="profile-fullname">Loading...</p>
+            <aside class="profile-sidebar" aria-label="Profile summary">
+                <div class="profile-avatar" id="profile-avatar" aria-hidden="true">?</div>
+                <p class="profile-name" id="profile-fullname">Loading…</p>
                 <p class="profile-since">Member since 2026</p>
-            </div>
+            </aside>
 
             <div class="profile-content">
                 <h1 class="profile-title">Personal information</h1>
                 <p class="profile-subtitle">Update your name below. Email changes must be done by an admin.</p>
 
-                <form id="profile-form">
+                <form id="profile-form" novalidate aria-label="Edit profile">
                     <div class="profile-field-group">
                         <div class="profile-field">
                             <label for="first_name">First Name</label>
-                            <input type="text" id="first_name" name="first_name" placeholder="First name" required>
+                            <input
+                                type="text"
+                                id="first_name"
+                                name="first_name"
+                                autocomplete="given-name"
+                                placeholder="First name"
+                                required
+                                aria-required="true"
+                            >
                         </div>
                         <div class="profile-field">
                             <label for="last_name">Last Name</label>
-                            <input type="text" id="last_name" name="last_name" placeholder="Last name" required>
+                            <input
+                                type="text"
+                                id="last_name"
+                                name="last_name"
+                                autocomplete="family-name"
+                                placeholder="Last name"
+                                required
+                                aria-required="true"
+                            >
                         </div>
                     </div>
 
