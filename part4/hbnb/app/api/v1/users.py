@@ -133,3 +133,43 @@ class UserResource(Resource):
 
         except ValueError as e:
             return {'error': str(e)}, 400
+
+
+@api.route('/<user_id>/places')
+class UserPlaces(Resource):
+    @jwt_required()
+    @api.doc(security='Bearer Auth')
+    @api.response(200, 'Places retrieved successfully')
+    @api.response(403, 'Unauthorized action')
+    @api.response(404, 'User not found')
+    def get(self, user_id):
+        """Get all places owned by a user"""
+        current_user = get_jwt_identity()
+        is_admin = _is_admin()
+
+        if user_id != current_user and not is_admin:
+            return {'error': 'Unauthorized action'}, 403
+
+        user = facade.get_user(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
+
+        places = facade.get_all_places()
+        user_places = [p for p in places if p.owner.id == user_id]
+
+        return [
+            {
+                'id': p.id,
+                'title': p.title,
+                'price': p.price,
+                'photos': p.photos,
+                'description': p.description,
+                'latitude': p.latitude,
+                'longitude': p.longitude,
+                'amenities': [
+                    {'id': a.id, 'name': a.name}
+                    for a in p.amenities
+                ]
+            }
+            for p in user_places
+        ], 200

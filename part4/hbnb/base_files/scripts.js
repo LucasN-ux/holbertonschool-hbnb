@@ -260,7 +260,11 @@ function initLogin() {
 function getCookie(name) {
     const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
-        const [key, value] = cookie.trim().split('=');
+        const trimmed = cookie.trim();
+        const eqIndex = trimmed.indexOf('=');
+        if (eqIndex === -1) continue;
+        const key = trimmed.substring(0, eqIndex);
+        const value = trimmed.substring(eqIndex + 1);
         if (key === name) return value;
     }
     return null;
@@ -279,14 +283,10 @@ function checkAuthentication() {
         loginLink.style.display = 'inline-flex';
     } else {
         loginLink.outerHTML = `
+            <a href="my_places.html" class="btn-outline">My Places</a>
             <a href="profile.html" class="btn-outline">My Profile</a>
             <button class="btn-primary" onclick="logout()">Logout</button>
         `;
-    }
-
-    const addPlaceBtn = document.getElementById('add-place-btn');
-    if (addPlaceBtn) {
-        addPlaceBtn.style.display = token ? 'inline-block' : 'none';
     }
 
     fetchPlaces(token);
@@ -565,6 +565,184 @@ async function initAddPlaceForm() {
     });
 }
 
+async function initMyPlaces() {
+    const container = document.getElementById('my-places-list');
+    if (!container) return;
+
+    const token = protectPage();
+    const payload = getTokenPayload(token);
+    const userId = payload?.sub;
+
+    const res = await fetch(
+        `http://127.0.0.1:5000/api/v1/users/${userId}/places`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+
+    if (!res.ok) {
+        container.innerHTML = '<p class="loading-text">Could not load your places.</p>';
+        return;
+    }
+
+    const places = await res.json();
+
+    if (places.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <p>You have no places yet.</p>
+                <a href="add_place.html" class="btn-save" style="display:inline-block;width:auto;padding:0.75rem 1.5rem;">Add your first place</a>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = '';
+    places.forEach(place => {
+        const photos = place.photos ? JSON.parse(place.photos) : [];
+        const card = document.createElement('div');
+        card.className = 'my-place-card';
+        card.innerHTML = `
+            <div class="my-place-photo">
+                ${photos[0]
+                    ? `<img src="${photos[0]}" alt="${place.title}">`
+                    : `<div class="place-card-no-photo">🏠</div>`}
+            </div>
+            <div class="my-place-info">
+                <h3>${place.title}</h3>
+                <p class="price">$${place.price} <span>/ night</span></p>
+                <p class="description">${place.description || ''}</p>
+            </div>
+            <div class="my-place-actions">
+                <a href="place.html?id=${place.id}" class="btn-outline">View</a>
+                <a href="edit_place.html?id=${place.id}" class="btn-save" style="width:auto;padding:0.5rem 1.25rem;">Edit</a>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+async function initEditPlaceForm() {
+    const form = document.getElementById('edit-place-form');
+    if (!form) return;
+
+    const token = protectPage();
+    const placeId = getPlaceIdFromURL();
+
+    // Load amenities
+    const amenitiesContainer = document.getElementById('amenities-list');
+    const allAmenities = [];
+    try {
+        const res = await fetch('http://127.0.0.1:5000/api/v1/amenities/', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const amenities = await res.json();
+            allAmenities.push(...amenities);
+        }
+    } catch {}
+
+    // Load current place data
+    const placeRes = await fetch(
+        `http://127.0.0.1:5000/api/v1/places/${placeId}`
+    );
+    if (!placeRes.ok) {
+        alert('Place not found.');
+        window.location.href = 'my_places.html';
+        return;
+    }
+    const place = await placeRes.json();
+
+    // Prefill fields
+    document.getElementById('title').value = place.title;
+    document.getElementById('description').value = place.description || '';
+    document.getElementById('price').value = place.price;
+    document.getElementById('latitude').value = place.latitude;
+    document.getElementById('longitude').value = place.longitude;
+
+    // Render amenities with current ones checked
+    const currentAmenityIds = place.amenities.map(a => a.id);
+    amenitiesContainer.innerHTML = allAmenities.length === 0
+        ? '<p class="loading-text">No amenities available.</p>'
+        : allAmenities.map(a => `
+            <label class="amenity-checkbox">
+                <input type="checkbox" name="amenities" value="${a.id}"
+                    ${currentAmenityIds.includes(a.id) ? 'checked' : ''}>
+                <span>${a.name}</span>
+            </label>
+        `).join('');
+
+    // Show current photos
+    const currentPhotos = place.photos ? JSON.parse(place.photos) : [];
+    const currentPhotosDiv = document.getElementById('current-photos');
+    if (currentPhotos.length > 0) {
+        currentPhotosDiv.innerHTML = currentPhotos.map(url =>
+            `<div class="photo-preview-item"><img src="${url}" alt="photo"></div>`
+        ).join('');
+    }
+
+    // New photo previews
+    document.getElementById('photos').addEventListener('change', (e) => {
+        const previewGrid = document.getElementById('photo-previews');
+        previewGrid.innerHTML = '';
+        Array.from(e.target.files).forEach(file => {
+            const div = document.createElement('div');
+            div.className = 'photo-preview-item';
+            div.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="preview">`;
+            previewGrid.appendChild(div);
+        });
+    });
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        let photos = currentPhotos;
+        const photoFiles = document.getElementById('photos').files;
+        if (photoFiles.length > 0) {
+            const formData = new FormData();
+            Array.from(photoFiles).forEach(f => formData.append('photos[]', f));
+            const uploadRes = await fetch('http://127.0.0.1:5000/api/v1/upload', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            if (!uploadRes.ok) { alert('Photo upload failed'); return; }
+            photos = (await uploadRes.json()).photo_urls;
+        }
+
+        const selectedAmenities = Array.from(
+            document.querySelectorAll('input[name="amenities"]:checked')
+        ).map(cb => cb.value);
+
+        const data = {
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            price: parseFloat(document.getElementById('price').value),
+            latitude: parseFloat(document.getElementById('latitude').value),
+            longitude: parseFloat(document.getElementById('longitude').value),
+            photos: photos.length > 0 ? JSON.stringify(photos) : null,
+            amenities: selectedAmenities
+        };
+
+        const res = await fetch(
+            `http://127.0.0.1:5000/api/v1/places/${placeId}`,
+            {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            }
+        );
+
+        if (res.ok) {
+            alert('Place updated successfully!');
+            window.location.href = 'my_places.html';
+        } else {
+            const err = await res.json();
+            alert('Error: ' + (err.error || 'Update failed'));
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     loadHeaderFooter();
     initPriceFilter();
@@ -576,4 +754,6 @@ document.addEventListener("DOMContentLoaded", function () {
     initAddPlaceForm();
     initRegisterForm();
     initProfileForm();
+    initMyPlaces();
+    initEditPlaceForm();
 });
