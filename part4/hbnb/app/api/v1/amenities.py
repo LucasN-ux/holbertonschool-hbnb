@@ -54,6 +54,20 @@ class AmenityResource(Resource):
 
     @jwt_required()
     @api.doc(security='Bearer Auth')
+    @api.response(200, 'Amenity deleted successfully')
+    @api.response(403, 'Admin access required')
+    @api.response(404, 'Amenity not found')
+    def delete(self, amenity_id):
+        """Delete an amenity (admin only)"""
+        if not _is_admin():
+            return {'error': 'Admin access required'}, 403
+        deleted = facade.delete_amenity(amenity_id)
+        if not deleted:
+            return {'error': 'Amenity not found'}, 404
+        return {'message': 'Amenity deleted successfully'}, 200
+
+    @jwt_required()
+    @api.doc(security='Bearer Auth')
     @api.expect(amenity_model)
     @api.response(200, 'Amenity updated successfully')
     @api.response(404, 'Amenity not found')

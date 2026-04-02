@@ -9,28 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <div id="header"></div>
 
     <!-- ── HERO ─────────────────────────────────────────── -->
     <section class="s-hero" id="hero" aria-label="Welcome">
-        <div class="s-hero__inner">
-            <span class="s-hero__badge">
-                <span class="s-hero__badge-dot" aria-hidden="true"></span>
-                The new way to travel
-            </span>
-            <h1 class="s-hero__title">
-                Find your<br>next <em>stay.</em>
-            </h1>
-            <p class="s-hero__sub">
-                Unique places hosted by real people.<br>
-                Any budget, any destination.
-            </p>
-            <div class="s-hero__actions">
-                <a href="#main-content" class="btn-hero btn-hero--primary">Explore places</a>
-            </div>
-        </div>
+        <a href="index.html" class="logo-hero" aria-label="hbnb — homepage">hbnb</a>
         <div class="s-hero__scroll" aria-hidden="true">
             <div class="s-hero__scroll-chevron"></div>
         </div>
@@ -75,13 +62,43 @@
     <!-- ── EXPLORE ─────────────────────────────────────── -->
     <main id="main-content" class="s-explore">
         <div class="s-explore__inner">
-            <h2 class="s-explore__heading" data-reveal>Explore all places</h2>
+            <h2 class="s-explore__heading" data-reveal>Explore all <em>places</em></h2>
 
-            <section id="filter" aria-label="Filter places by price">
-                <label for="price-filter">Max price</label>
-                <select id="price-filter" aria-label="Filter by maximum price per night">
-                    <!-- Options populated dynamically -->
-                </select>
+            <section id="filter" aria-label="Filter and sort places" role="search">
+                <div class="filter-search-icon" aria-hidden="true">&#9740;</div>
+                <div class="filter-group">
+                    <span class="filter-label">Search</span>
+                    <input
+                        type="text"
+                        id="search-input"
+                        class="filter-control"
+                        placeholder="City, title…"
+                        aria-label="Search places by name or location"
+                        autocomplete="off"
+                    >
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Max price</span>
+                    <select id="price-filter" class="filter-control" aria-label="Filter by maximum price per night">
+                        <option value="all">Any price</option>
+                        <option value="50">Up to $50</option>
+                        <option value="100">Up to $100</option>
+                        <option value="150">Up to $150</option>
+                        <option value="200">Up to $200</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Sort by</span>
+                    <select id="sort-select" class="filter-control" aria-label="Sort places">
+                        <option value="default">Featured</option>
+                        <option value="name-asc">Name A → Z</option>
+                        <option value="name-desc">Name Z → A</option>
+                        <option value="price-asc">Price: low → high</option>
+                        <option value="price-desc">Price: high → low</option>
+                        <option value="location-asc">Location A → Z</option>
+                    </select>
+                </div>
+                <button class="filter-btn" id="filter-reset" aria-label="Reset all filters">Reset</button>
             </section>
 
             <section

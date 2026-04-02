@@ -79,9 +79,81 @@ function load(id, file) {
 function loadHeaderFooter() {
     load('header', 'header.html').then(() => {
         checkAuthentication();
+        initLogoAnimation();
     });
     load('footer', 'footer.html').then(() => {
         updateFooterAuth();
+    });
+}
+
+function initLogoAnimation() {
+    const logo    = document.querySelector('.logo-hero');
+    const logoNav = document.querySelector('.logo-nav');
+    const header  = document.querySelector('header');
+
+    // Pas de hero → logo statique, header visible
+    if (!logo) {
+        if (logoNav) logoNav.style.opacity = '1';
+        if (header)  header.classList.add('header--visible');
+        return;
+    }
+
+    // Sur index : cacher le logo-nav statique, logo-hero fait tout
+    if (logoNav) logoNav.style.display = 'none';
+    if (header)  header.classList.remove('header--visible');
+
+    if (!window.gsap) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    const HEADER_H  = 60;
+    const targetTop = HEADER_H / 2;
+    const finalSize = 22; // px ≈ 1.375rem
+
+    ScrollTrigger.create({
+        trigger : '#hero',
+        start   : 'top top',
+        end     : 'bottom top',
+        onUpdate(self) {
+            const p = Math.min(Math.max(self.progress, 0), 1);
+
+            if (p <= 0) {
+                logo.style.cssText = '';
+                if (header) header.classList.remove('header--visible');
+                return;
+            }
+
+            const startSize = Math.min(Math.max(window.innerWidth * 0.22, 80), 320);
+            const startTop  = window.innerHeight / 2;
+            const size = startSize + (finalSize - startSize) * p;
+            const top  = startTop  + (targetTop - startTop)  * p;
+
+            logo.style.top           = top + 'px';
+            logo.style.left          = '50%';
+            logo.style.transform     = 'translate(-50%, -50%)';
+            logo.style.fontSize      = size + 'px';
+            logo.style.position      = 'fixed';
+            logo.style.zIndex        = '1002';
+            logo.style.letterSpacing = '0.18em';
+            logo.style.textTransform = 'uppercase';
+
+            if (p >= 0.90) {
+                logo.style.background           = 'linear-gradient(110deg, #4B5043 0%, #9BC4BC 100%)';
+                logo.style.webkitBackgroundClip = 'text';
+                logo.style.backgroundClip       = 'text';
+                logo.style.webkitTextFillColor  = 'transparent';
+                logo.style.color                = 'transparent';
+                logo.style.pointerEvents        = 'auto';
+                if (header) header.classList.add('header--visible');
+            } else {
+                logo.style.background           = '';
+                logo.style.webkitBackgroundClip = '';
+                logo.style.backgroundClip       = '';
+                logo.style.webkitTextFillColor  = '';
+                logo.style.color                = `rgba(255,255,255,${1 - p * 0.4})`;
+                logo.style.pointerEvents        = 'none';
+                if (header) header.classList.remove('header--visible');
+            }
+        }
     });
 }
 
@@ -110,11 +182,14 @@ function checkAuthentication() {
         if (loginLink) loginLink.style.display = 'inline-flex';
     } else {
         if (loginLink) {
-            loginLink.outerHTML = `
-                <a href="my_places.html" class="btn-outline">My Places</a>
-                <a href="profile.html" class="btn-outline">My Profile</a>
-                <button class="btn-primary" onclick="logout()" aria-label="Log out of your account">Logout</button>
-            `;
+            const payload = getTokenPayload(token);
+            const isAdmin = payload && payload.is_admin;
+            loginLink.outerHTML = isAdmin
+                ? `<a href="admin.html" class="btn-outline">Admin Panel</a>
+                   <button class="btn-primary" onclick="logout()" aria-label="Log out of your account">Logout</button>`
+                : `<a href="my_places.html" class="btn-outline">My Places</a>
+                   <a href="profile.html" class="btn-outline">My Profile</a>
+                   <button class="btn-primary" onclick="logout()" aria-label="Log out of your account">Logout</button>`;
         }
     }
 
@@ -196,27 +271,52 @@ function displayPlaces(places) {
     });
 }
 
-function initPriceFilter() {
-    const filter = document.getElementById('price-filter');
-    if (!filter) return;
+function initFilters() {
+    const searchInput = document.getElementById('search-input');
+    const priceFilter = document.getElementById('price-filter');
+    const sortSelect  = document.getElementById('sort-select');
+    const resetBtn    = document.getElementById('filter-reset');
 
-    filter.innerHTML = `
-        <option value="all">All prices</option>
-        <option value="50">Up to $50</option>
-        <option value="100">Up to $100</option>
-        <option value="150">Up to $150</option>
-        <option value="200">Up to $200</option>
-    `;
+    if (!priceFilter && !searchInput && !sortSelect) return;
 
-    filter.addEventListener('change', (event) => {
-        const max = event.target.value;
-        const cards = document.querySelectorAll('.place-card');
+    function applyFilters() {
+        const query    = (searchInput?.value || '').toLowerCase().trim();
+        const maxPrice = priceFilter?.value || 'all';
+        const sort     = sortSelect?.value  || 'default';
 
-        cards.forEach(card => {
-            const visible = max === 'all' || Number(card.dataset.price) <= Number(max);
-            card.style.display = visible ? 'flex' : 'none';
-            card.setAttribute('aria-hidden', String(!visible));
+        let filtered = allPlaces.filter(p => {
+            const matchPrice = maxPrice === 'all' || (p.price != null && Number(p.price) <= Number(maxPrice));
+            const matchQuery = !query ||
+                (p.title    || '').toLowerCase().includes(query) ||
+                (p.city     || '').toLowerCase().includes(query) ||
+                (p.location || '').toLowerCase().includes(query) ||
+                (p.address  || '').toLowerCase().includes(query);
+            return matchPrice && matchQuery;
         });
+
+        filtered = [...filtered].sort((a, b) => {
+            switch (sort) {
+                case 'name-asc':     return (a.title || '').localeCompare(b.title || '');
+                case 'name-desc':    return (b.title || '').localeCompare(a.title || '');
+                case 'price-asc':    return (a.price || 0) - (b.price || 0);
+                case 'price-desc':   return (b.price || 0) - (a.price || 0);
+                case 'location-asc': return (a.city || a.location || '').localeCompare(b.city || b.location || '');
+                default:             return 0;
+            }
+        });
+
+        displayPlaces(filtered);
+    }
+
+    searchInput?.addEventListener('input', applyFilters);
+    priceFilter?.addEventListener('change', applyFilters);
+    sortSelect?.addEventListener('change', applyFilters);
+
+    resetBtn?.addEventListener('click', () => {
+        if (searchInput) searchInput.value = '';
+        if (priceFilter) priceFilter.value = 'all';
+        if (sortSelect)  sortSelect.value  = 'default';
+        displayPlaces(allPlaces);
     });
 }
 
@@ -401,7 +501,8 @@ function initLogin() {
         if (response.ok) {
             const data = await response.json();
             document.cookie = `token=${data.access_token}; path=/`;
-            window.location.href = 'index.html';
+            const payload = getTokenPayload(data.access_token);
+            window.location.href = (payload && payload.is_admin) ? 'admin.html' : 'index.html';
         } else {
             showToast('Invalid email or password. Please try again.', 'error');
             document.getElementById('password').value = '';
@@ -944,6 +1045,8 @@ function initScrollReveal() {
 
 /* ── HEADER SCROLL STATE ── */
 function initHeaderScroll() {
+    // Sur index, le logo animation contrôle le header — pas de scroll class
+    if (document.querySelector('.logo-hero')) return;
     const header = document.querySelector('header');
     if (!header) return;
     const toggle = () => header.classList.toggle('scrolled', window.scrollY > 10);
@@ -954,7 +1057,7 @@ function initHeaderScroll() {
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', function () {
     loadHeaderFooter();
-    initPriceFilter();
+    initFilters();
     initPlaceDetails();
     renderReviews();
     renderAddReviewButton();

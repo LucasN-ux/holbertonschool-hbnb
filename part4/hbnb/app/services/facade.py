@@ -228,3 +228,24 @@ class HBnBFacade:
             return False
         self.review_repo.delete(review_id)
         return True
+
+    def delete_user(self, user_id):
+        user = self.user_repo.get(user_id)
+        if not user:
+            return False
+        self.user_repo.delete(user_id)
+        return True
+
+    def delete_place(self, place_id):
+        place = self.place_repo.get(place_id)
+        if not place:
+            return False
+        self.place_repo.delete(place_id)
+        return True
+
+    def delete_amenity(self, amenity_id):
+        amenity = self.amenity_repo.get(amenity_id)
+        if not amenity:
+            return False
+        self.amenity_repo.delete(amenity_id)
+        return True

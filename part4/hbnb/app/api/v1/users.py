@@ -68,7 +68,8 @@ class UserList(Resource):
                 'id': u.id,
                 'first_name': u.first_name,
                 'last_name': u.last_name,
-                'email': u.email
+                'email': u.email,
+                'is_admin': u.is_admin
             }
             for u in users
         ], 200
@@ -89,6 +90,20 @@ class UserResource(Resource):
             'last_name': user.last_name,
             'email': user.email
         }, 200
+
+    @jwt_required()
+    @api.doc(security='Bearer Auth')
+    @api.response(200, 'User deleted successfully')
+    @api.response(403, 'Admin access required')
+    @api.response(404, 'User not found')
+    def delete(self, user_id):
+        """Delete a user (admin only)"""
+        if not _is_admin():
+            return {'error': 'Admin access required'}, 403
+        deleted = facade.delete_user(user_id)
+        if not deleted:
+            return {'error': 'User not found'}, 404
+        return {'message': 'User deleted successfully'}, 200
 
     @jwt_required()
     @api.doc(security='Bearer Auth')
