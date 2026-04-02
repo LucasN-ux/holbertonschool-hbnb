@@ -57,15 +57,14 @@
 
                 <div class="form-section">
                     <h2 class="form-section-title">Photos</h2>
-                    <div id="current-photos" class="photo-previews-grid" aria-label="Current photos"></div>
-                    <p class="form-section-desc" id="new-photos-hint" style="margin-top:1rem;">Add new photos (replaces existing ones if selected)</p>
-                    <label class="photo-upload-area" for="photos">
+                    <p class="form-section-desc" id="photos-count-hint">0 / 10 photos</p>
+                    <div id="all-photo-previews" class="photo-previews-grid" aria-label="Photos"></div>
+                    <label class="photo-upload-area" for="photos" id="photos-upload-label" style="margin-top:1rem;">
                         <span class="photo-upload-icon" aria-hidden="true">📷</span>
-                        <span class="photo-upload-text">Click to select photos</span>
-                        <span class="photo-upload-hint">PNG, JPG, WEBP</span>
-                        <input type="file" id="photos" name="photos" accept="image/*" multiple style="display:none;" aria-describedby="new-photos-hint">
+                        <span class="photo-upload-text">Click to add more photos</span>
+                        <span class="photo-upload-hint">PNG, JPG, WEBP — 10 max total</span>
+                        <input type="file" id="photos" name="photos" accept="image/*" multiple style="display:none;" aria-describedby="photos-count-hint">
                     </label>
-                    <div id="photo-previews" class="photo-previews-grid" aria-label="New photo previews"></div>
                 </div>
 
                 <div class="form-submit-row">

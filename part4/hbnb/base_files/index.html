@@ -64,42 +64,50 @@
         <div class="s-explore__inner">
             <h2 class="s-explore__heading" data-reveal>Explore all <em>places</em></h2>
 
-            <section id="filter" aria-label="Filter and sort places" role="search">
-                <div class="filter-search-icon" aria-hidden="true">&#9740;</div>
-                <div class="filter-group">
-                    <span class="filter-label">Search</span>
+            <div id="filter" role="search" aria-label="Filter and sort places">
+                <!-- Search row -->
+                <div class="filter-search-row">
+                    <span class="filter-search-icon" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </span>
                     <input
                         type="text"
                         id="search-input"
-                        class="filter-control"
-                        placeholder="City, title…"
-                        aria-label="Search places by name or location"
+                        class="filter-search-input"
+                        placeholder="Search by title, city…"
+                        aria-label="Search places"
                         autocomplete="off"
                     >
+                    <button class="filter-clear-btn" id="filter-reset" aria-label="Clear filters" title="Reset">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
                 </div>
-                <div class="filter-group">
-                    <span class="filter-label">Max price</span>
-                    <select id="price-filter" class="filter-control" aria-label="Filter by maximum price per night">
-                        <option value="all">Any price</option>
-                        <option value="50">Up to $50</option>
-                        <option value="100">Up to $100</option>
-                        <option value="150">Up to $150</option>
-                        <option value="200">Up to $200</option>
-                    </select>
+                <!-- Chips row -->
+                <div class="filter-chips-row">
+                    <div class="filter-chip">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                        <select id="price-filter" class="filter-chip-select" aria-label="Max price">
+                            <option value="all">Any price</option>
+                            <option value="50">Up to $50</option>
+                            <option value="100">Up to $100</option>
+                            <option value="150">Up to $150</option>
+                            <option value="200">Up to $200</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+                        <select id="sort-select" class="filter-chip-select" aria-label="Sort by">
+                            <option value="default">Featured</option>
+                            <option value="name-asc">Name A → Z</option>
+                            <option value="name-desc">Name Z → A</option>
+                            <option value="price-asc">Price ↑</option>
+                            <option value="price-desc">Price ↓</option>
+                            <option value="location-asc">Location A → Z</option>
+                        </select>
+                    </div>
+                    <span class="filter-results-count" id="filter-count"></span>
                 </div>
-                <div class="filter-group">
-                    <span class="filter-label">Sort by</span>
-                    <select id="sort-select" class="filter-control" aria-label="Sort places">
-                        <option value="default">Featured</option>
-                        <option value="name-asc">Name A → Z</option>
-                        <option value="name-desc">Name Z → A</option>
-                        <option value="price-asc">Price: low → high</option>
-                        <option value="price-desc">Price: high → low</option>
-                        <option value="location-asc">Location A → Z</option>
-                    </select>
-                </div>
-                <button class="filter-btn" id="filter-reset" aria-label="Reset all filters">Reset</button>
-            </section>
+            </div>
 
             <section
                 id="places-list"

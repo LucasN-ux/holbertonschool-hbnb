@@ -4,7 +4,7 @@ Module initializing the Flask application and setting up the API
 """
 
 import os
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_restx import Api
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
@@ -62,5 +62,9 @@ def create_app(config_name='development'):
     upload_folder = os.path.join(app.root_path, '..', 'base_files', 'uploads')
     os.makedirs(upload_folder, exist_ok=True)
     app.config['UPLOAD_FOLDER'] = upload_folder
+
+    @app.route('/uploads/<path:filename>')
+    def serve_upload(filename):
+        return send_from_directory(upload_folder, filename)
 
     return app

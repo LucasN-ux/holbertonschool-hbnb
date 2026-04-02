@@ -50,6 +50,7 @@ place_update_model = api.model('PlaceUpdate', {
     'price': fields.Float(description='Price per night'),
     'latitude': fields.Float(description='Latitude'),
     'longitude': fields.Float(description='Longitude'),
+    'photos': fields.String(description='JSON array of photo URLs'),
     'amenities': fields.List(
         fields.String, required=False,
         description="List of amenity IDs"

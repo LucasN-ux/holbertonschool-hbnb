@@ -212,6 +212,59 @@
         </div>
     </div>
 
+    <!-- Edit Place Modal -->
+    <div id="modal-edit-place" class="admin-modal-bg" style="display:none" onclick="closeModalBg(event,'modal-edit-place')">
+        <div class="admin-modal admin-modal--wide" onclick="event.stopPropagation()">
+            <h3>Edit Place</h3>
+            <input type="hidden" id="ep-id">
+            <div class="admin-modal-field"><label>Title</label><input type="text" id="ep-title"></div>
+            <div class="admin-modal-field"><label>Description</label><input type="text" id="ep-description"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+                <div class="admin-modal-field"><label>Price ($/night)</label><input type="number" id="ep-price" min="1" step="0.01"></div>
+                <div class="admin-modal-field"><label>Latitude</label><input type="number" id="ep-latitude" step="any"></div>
+                <div class="admin-modal-field"><label>Longitude</label><input type="number" id="ep-longitude" step="any"></div>
+            </div>
+
+            <!-- Photos -->
+            <div class="admin-modal-field" style="margin-top:.5rem">
+                <label>Photos <span id="ep-photo-count" style="opacity:.5;font-weight:400;text-transform:none;letter-spacing:0">0 / 10</span></label>
+                <div id="ep-photo-grid" class="admin-photo-grid"></div>
+                <label class="admin-photo-add" id="ep-photo-label" for="ep-photos-input">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add photos
+                    <input type="file" id="ep-photos-input" accept="image/*" multiple style="display:none">
+                </label>
+            </div>
+
+            <div class="admin-modal-actions">
+                <button class="admin-btn admin-btn--ghost" onclick="closeModal('modal-edit-place')">Cancel</button>
+                <button class="admin-btn admin-btn--primary" id="ep-save-btn" onclick="submitEditPlace()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Review Modal -->
+    <div id="modal-edit-review" class="admin-modal-bg" style="display:none" onclick="closeModalBg(event,'modal-edit-review')">
+        <div class="admin-modal" onclick="event.stopPropagation()">
+            <h3>Edit Review</h3>
+            <input type="hidden" id="er-id">
+            <div class="admin-modal-field"><label>Text</label><textarea id="er-text" rows="3" style="resize:vertical"></textarea></div>
+            <div class="admin-modal-field"><label>Rating (1–5)</label>
+                <select id="er-rating">
+                    <option value="1">★☆☆☆☆ — 1</option>
+                    <option value="2">★★☆☆☆ — 2</option>
+                    <option value="3">★★★☆☆ — 3</option>
+                    <option value="4">★★★★☆ — 4</option>
+                    <option value="5">★★★★★ — 5</option>
+                </select>
+            </div>
+            <div class="admin-modal-actions">
+                <button class="admin-btn admin-btn--ghost" onclick="closeModal('modal-edit-review')">Cancel</button>
+                <button class="admin-btn admin-btn--primary" onclick="submitEditReview()">Save</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Amenity Modal (create/edit) -->
     <div id="modal-amenity" class="admin-modal-bg" style="display:none" onclick="closeModalBg(event,'modal-amenity')">
         <div class="admin-modal" onclick="event.stopPropagation()">
@@ -242,7 +295,16 @@
     <script>
     /* ── ADMIN GUARD ── */
     (function () {
-        const token = (document.cookie.split(';').find(c => c.trim().startsWith('token=')) || '').split('=')[1];
+        const allCookies = document.cookie.split(';');
+        let token = '';
+        for (const c of allCookies) {
+            const trimmed = c.trim();
+            const eq = trimmed.indexOf('=');
+            if (eq !== -1 && trimmed.substring(0, eq) === 'token') {
+                token = trimmed.substring(eq + 1);
+                break;
+            }
+        }
         if (!token) { window.location.href = 'login.html'; return; }
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
@@ -253,7 +315,7 @@
     const API = 'http://127.0.0.1:5000/api/v1';
 
     function authHeaders() {
-        const token = (document.cookie.split(';').find(c => c.trim().startsWith('token=')) || '').split('=')[1];
+        const token = getCookie('token');
         return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
     }
 
@@ -440,10 +502,127 @@
                 <td style="color:rgba(248,247,244,0.40)">${p.latitude?.toFixed(4) || '—'}, ${p.longitude?.toFixed(4) || '—'}</td>
                 <td>
                     <div class="admin-actions">
+                        <button class="admin-btn admin-btn--ghost" onclick="openEditPlaceModal('${p.id}')">Edit</button>
                         <button class="admin-btn admin-btn--danger" onclick="deletePlace('${p.id}', '${p.title.replace(/'/g,"\\'")}')">Delete</button>
                     </div>
                 </td>
             </tr>`).join('');
+    }
+
+    let _epSaved   = [];   // existing photo URLs
+    let _epPending = [];   // new File objects
+
+    function _epRender() {
+        const grid    = document.getElementById('ep-photo-grid');
+        const count   = document.getElementById('ep-photo-count');
+        const label   = document.getElementById('ep-photo-label');
+        const total   = _epSaved.length + _epPending.length;
+        count.textContent = `${total} / 10`;
+        label.style.display = total >= 10 ? 'none' : '';
+        grid.innerHTML = '';
+
+        _epSaved.forEach((url, i) => {
+            const d = document.createElement('div');
+            d.className = 'admin-photo-item';
+            d.innerHTML = `<img src="${url}" alt="photo"><button type="button" class="admin-photo-rm" onclick="_epRemoveSaved(${i})">&#x2715;</button>`;
+            grid.appendChild(d);
+        });
+        _epPending.forEach((file, i) => {
+            const d = document.createElement('div');
+            d.className = 'admin-photo-item admin-photo-item--new';
+            d.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="new photo"><button type="button" class="admin-photo-rm" onclick="_epRemovePending(${i})">&#x2715;</button>`;
+            grid.appendChild(d);
+        });
+    }
+
+    window._epRemoveSaved   = i => { _epSaved.splice(i, 1);   _epRender(); };
+    window._epRemovePending = i => { _epPending.splice(i, 1); _epRender(); };
+
+    function openEditPlaceModal(id) {
+        const p = _places.find(x => x.id === id);
+        if (!p) return;
+        document.getElementById('ep-id').value          = p.id;
+        document.getElementById('ep-title').value       = p.title;
+        document.getElementById('ep-description').value = p.description || '';
+        document.getElementById('ep-price').value       = p.price;
+        document.getElementById('ep-latitude').value    = p.latitude;
+        document.getElementById('ep-longitude').value   = p.longitude;
+
+        _epSaved   = [];
+        _epPending = [];
+        try { _epSaved = p.photos ? JSON.parse(p.photos) : []; } catch {}
+        _epRender();
+
+        // wire file input (replace to avoid duplicate listeners)
+        const inp = document.getElementById('ep-photos-input');
+        const fresh = inp.cloneNode(true);
+        inp.parentNode.replaceChild(fresh, inp);
+        fresh.addEventListener('change', e => {
+            const slots    = 10 - _epSaved.length - _epPending.length;
+            const incoming = Array.from(e.target.files).slice(0, slots);
+            if (e.target.files.length > slots)
+                showToast(`Only ${slots} slot(s) left (10 max).`, 'error');
+            _epPending.push(...incoming);
+            e.target.value = '';
+            _epRender();
+        });
+
+        openModal('modal-edit-place');
+    }
+
+    async function submitEditPlace() {
+        const id  = document.getElementById('ep-id').value;
+        const btn = document.getElementById('ep-save-btn');
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+
+        const reset = () => { btn.disabled = false; btn.textContent = 'Save'; };
+
+        let photos = [..._epSaved];
+
+        if (_epPending.length > 0) {
+            try {
+                const fd = new FormData();
+                _epPending.forEach(f => fd.append('photos[]', f));
+                const token = getCookie('token');
+                const up = await fetch('http://127.0.0.1:5000/api/v1/upload', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: fd
+                });
+                if (!up.ok) {
+                    let msg = 'Photo upload failed.';
+                    try { const e = await up.json(); msg = e.error || msg; } catch {}
+                    showToast(`Upload error (${up.status}): ${msg}`, 'error');
+                    reset(); return;
+                }
+                const upData = await up.json();
+                photos = [...photos, ...upData.photo_urls];
+            } catch (err) {
+                showToast(`Upload error: ${err.message}`, 'error');
+                reset(); return;
+            }
+        }
+
+        const body = {
+            title:       document.getElementById('ep-title').value.trim(),
+            description: document.getElementById('ep-description').value.trim(),
+            price:       parseFloat(document.getElementById('ep-price').value),
+            latitude:    parseFloat(document.getElementById('ep-latitude').value),
+            longitude:   parseFloat(document.getElementById('ep-longitude').value),
+            photos:      JSON.stringify(photos),
+        };
+
+        if (!body.title || isNaN(body.price)) { showToast('Title and price are required.', 'error'); reset(); return; }
+
+        try {
+            const res = await fetch(`${API}/places/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(body) });
+            if (res.ok) { closeModal('modal-edit-place'); showToast('Place updated.', 'success'); loadPlaces(); }
+            else { const e = await res.json(); showToast(e.error || 'Could not update place.', 'error'); }
+        } catch (err) {
+            showToast(`Save error: ${err.message}`, 'error');
+        }
+        reset();
     }
 
     function deletePlace(id, title) {
@@ -474,10 +653,32 @@
                 <td style="color:rgba(248,247,244,0.40);font-size:.75rem">${r.user_id?.slice(0,8)}…</td>
                 <td>
                     <div class="admin-actions">
+                        <button class="admin-btn admin-btn--ghost" onclick="openEditReviewModal('${r.id}')">Edit</button>
                         <button class="admin-btn admin-btn--danger" onclick="deleteReviewAdmin('${r.id}')">Delete</button>
                     </div>
                 </td>
             </tr>`).join('');
+    }
+
+    function openEditReviewModal(id) {
+        const r = _reviews.find(x => x.id === id);
+        if (!r) return;
+        document.getElementById('er-id').value     = r.id;
+        document.getElementById('er-text').value   = r.text;
+        document.getElementById('er-rating').value = String(r.rating);
+        openModal('modal-edit-review');
+    }
+
+    async function submitEditReview() {
+        const id   = document.getElementById('er-id').value;
+        const body = {
+            text:   document.getElementById('er-text').value.trim(),
+            rating: parseInt(document.getElementById('er-rating').value),
+        };
+        if (!body.text) { showToast('Text is required.', 'error'); return; }
+        const res = await fetch(`${API}/reviews/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(body) });
+        if (res.ok) { closeModal('modal-edit-review'); showToast('Review updated.', 'success'); loadReviews(); }
+        else { const e = await res.json(); showToast(e.error || 'Could not update review.', 'error'); }
     }
 
     function deleteReviewAdmin(id) {

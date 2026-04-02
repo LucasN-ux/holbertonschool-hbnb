@@ -57,14 +57,14 @@
 
                 <div class="form-section">
                     <h2 class="form-section-title">Photos</h2>
-                    <p class="form-section-desc" id="photos-hint">Add up to 10 photos of your place.</p>
-                    <label class="photo-upload-area" for="photos">
+                    <p class="form-section-desc" id="photos-hint">0 / 10 photos</p>
+                    <div id="photo-previews" class="photo-previews-grid" aria-label="Photo previews"></div>
+                    <label class="photo-upload-area" for="photos" style="margin-top:1rem;">
                         <span class="photo-upload-icon" aria-hidden="true">📷</span>
-                        <span class="photo-upload-text">Click to select photos</span>
-                        <span class="photo-upload-hint">PNG, JPG, WEBP up to 10MB each</span>
+                        <span class="photo-upload-text">Click to add photos</span>
+                        <span class="photo-upload-hint">PNG, JPG, WEBP — 10 max total</span>
                         <input type="file" id="photos" name="photos" accept="image/*" multiple style="display:none;" aria-describedby="photos-hint">
                     </label>
-                    <div id="photo-previews" class="photo-previews-grid" aria-label="Photo previews"></div>
                 </div>
 
                 <div class="form-submit-row">

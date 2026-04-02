@@ -80,11 +80,13 @@ function loadHeaderFooter() {
     load('header', 'header.html').then(() => {
         checkAuthentication();
         initLogoAnimation();
+        initMobileMenu();
     });
     load('footer', 'footer.html').then(() => {
         updateFooterAuth();
     });
 }
+
 
 function initLogoAnimation() {
     const logo    = document.querySelector('.logo-hero');
@@ -134,7 +136,9 @@ function initLogoAnimation() {
             logo.style.position      = 'fixed';
             logo.style.zIndex        = '1002';
             logo.style.letterSpacing = '0.18em';
+            logo.style.marginRight   = '-0.18em';
             logo.style.textTransform = 'uppercase';
+            logo.style.overflow      = 'visible';
 
             if (p >= 0.90) {
                 logo.style.background           = 'linear-gradient(110deg, #4B5043 0%, #9BC4BC 100%)';
@@ -174,22 +178,72 @@ function updateFooterAuth() {
     }
 }
 
+function initMobileMenu() {
+    const hamburger = document.getElementById('nav-hamburger');
+    const menu      = document.getElementById('mobile-menu');
+    const overlay   = document.getElementById('mobile-menu-overlay');
+    if (!hamburger || !menu || !overlay) return;
+
+    function openMenu() {
+        menu.classList.add('open');
+        overlay.classList.add('open');
+        hamburger.classList.add('open');
+        hamburger.setAttribute('aria-expanded', 'true');
+        menu.setAttribute('aria-hidden', 'false');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeMenu() {
+        menu.classList.remove('open');
+        overlay.classList.remove('open');
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+        menu.setAttribute('aria-hidden', 'true');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.contains('open') ? closeMenu() : openMenu();
+    });
+    overlay.addEventListener('click', closeMenu);
+    menu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeMenu();
+    });
+}
+
 function checkAuthentication() {
     const token = getCookie('token');
     const loginLink = document.getElementById('login-link');
+    const mobileLinks = document.getElementById('mobile-menu-links');
+    const mobileLoginLink = document.getElementById('mobile-login-link');
 
     if (!token) {
         if (loginLink) loginLink.style.display = 'inline-flex';
+        if (mobileLoginLink) mobileLoginLink.style.display = 'block';
     } else {
+        const payload = getTokenPayload(token);
+        const isAdmin = payload && payload.is_admin;
+
         if (loginLink) {
-            const payload = getTokenPayload(token);
-            const isAdmin = payload && payload.is_admin;
             loginLink.outerHTML = isAdmin
                 ? `<a href="admin.html" class="btn-outline">Admin Panel</a>
                    <button class="btn-primary" onclick="logout()" aria-label="Log out of your account">Logout</button>`
                 : `<a href="my_places.html" class="btn-outline">My Places</a>
                    <a href="profile.html" class="btn-outline">My Profile</a>
                    <button class="btn-primary" onclick="logout()" aria-label="Log out of your account">Logout</button>`;
+        }
+
+        if (mobileLinks) {
+            mobileLinks.innerHTML = isAdmin
+                ? `<a href="admin.html">Admin Panel</a>
+                   <a href="#" onclick="logout();return false;">Logout</a>`
+                : `<a href="my_places.html">My Places</a>
+                   <a href="profile.html">My Profile</a>
+                   <a href="#" onclick="logout();return false;">Logout</a>`;
         }
     }
 
@@ -283,6 +337,7 @@ function initFilters() {
         const query    = (searchInput?.value || '').toLowerCase().trim();
         const maxPrice = priceFilter?.value || 'all';
         const sort     = sortSelect?.value  || 'default';
+        const countEl  = document.getElementById('filter-count');
 
         let filtered = allPlaces.filter(p => {
             const matchPrice = maxPrice === 'all' || (p.price != null && Number(p.price) <= Number(maxPrice));
@@ -293,6 +348,11 @@ function initFilters() {
                 (p.address  || '').toLowerCase().includes(query);
             return matchPrice && matchQuery;
         });
+
+        if (countEl) {
+            const isFiltered = query || maxPrice !== 'all' || sort !== 'default';
+            countEl.textContent = isFiltered ? `${filtered.length} result${filtered.length !== 1 ? 's' : ''}` : '';
+        }
 
         filtered = [...filtered].sort((a, b) => {
             switch (sort) {
@@ -316,6 +376,8 @@ function initFilters() {
         if (searchInput) searchInput.value = '';
         if (priceFilter) priceFilter.value = 'all';
         if (sortSelect)  sortSelect.value  = 'default';
+        const countEl = document.getElementById('filter-count');
+        if (countEl) countEl.textContent = '';
         displayPlaces(allPlaces);
     });
 }
@@ -722,16 +784,36 @@ async function initAddPlaceForm() {
         amenitiesContainer.innerHTML = '<p class="loading-text">Could not load amenities.</p>';
     }
 
-    document.getElementById('photos').addEventListener('change', (e) => {
-        const previewGrid = document.getElementById('photo-previews');
-        previewGrid.innerHTML = '';
-        Array.from(e.target.files).forEach(file => {
-            const url = URL.createObjectURL(file);
+    let addPlaceFiles = [];
+
+    function renderAddPhotos() {
+        const grid = document.getElementById('photo-previews');
+        const hint = document.getElementById('photos-hint');
+        const label = document.querySelector('label.photo-upload-area');
+        hint.textContent = `${addPlaceFiles.length} / 10 photos`;
+        if (label) label.style.display = addPlaceFiles.length >= 10 ? 'none' : '';
+        grid.innerHTML = '';
+        addPlaceFiles.forEach((file, i) => {
             const div = document.createElement('div');
             div.className = 'photo-preview-item';
-            div.innerHTML = `<img src="${url}" alt="Photo preview">`;
-            previewGrid.appendChild(div);
+            div.innerHTML = `
+                <img src="${URL.createObjectURL(file)}" alt="Photo ${i + 1}">
+                <button type="button" class="photo-remove-btn" aria-label="Remove photo" onclick="removeAddPhoto(${i})">&#x2715;</button>`;
+            grid.appendChild(div);
         });
+    }
+
+    window.removeAddPhoto = (i) => { addPlaceFiles.splice(i, 1); renderAddPhotos(); };
+
+    document.getElementById('photos').addEventListener('change', (e) => {
+        const slots = 10 - addPlaceFiles.length;
+        const incoming = Array.from(e.target.files).slice(0, slots);
+        if (e.target.files.length > slots) {
+            showToast(`Only ${slots} more photo(s) can be added (10 max total).`, 'error');
+        }
+        addPlaceFiles.push(...incoming);
+        e.target.value = '';
+        renderAddPhotos();
     });
 
     form.addEventListener('submit', async (event) => {
@@ -742,10 +824,9 @@ async function initAddPlaceForm() {
         submitBtn.textContent = 'Publishing…';
 
         let photos = [];
-        const photoFiles = document.getElementById('photos').files;
-        if (photoFiles.length > 0) {
+        if (addPlaceFiles.length > 0) {
             const formData = new FormData();
-            Array.from(photoFiles).forEach(f => formData.append('photos[]', f));
+            addPlaceFiles.forEach(f => formData.append('photos[]', f));
 
             const uploadRes = await fetch('http://127.0.0.1:5000/api/v1/upload', {
                 method: 'POST',
@@ -772,7 +853,7 @@ async function initAddPlaceForm() {
             price: parseFloat(document.getElementById('price').value),
             latitude: parseFloat(document.getElementById('latitude').value),
             longitude: parseFloat(document.getElementById('longitude').value),
-            photos: photos.length > 0 ? JSON.stringify(photos) : null,
+            photos: JSON.stringify(photos),
             amenities: selectedAmenities
         };
 
@@ -905,25 +986,55 @@ async function initEditPlaceForm() {
             </label>
         `).join('');
 
-    let currentPhotos = [];
-    try { currentPhotos = place.photos ? JSON.parse(place.photos) : []; } catch {}
+    // ── Photo management for edit ──
+    let savedPhotos = []; // existing URLs (from server)
+    let pendingFiles = []; // new File objects not yet uploaded
+    try { savedPhotos = place.photos ? JSON.parse(place.photos) : []; } catch {}
 
-    const currentPhotosDiv = document.getElementById('current-photos');
-    if (currentPhotos.length > 0) {
-        currentPhotosDiv.innerHTML = currentPhotos.map((url, i) =>
-            `<div class="photo-preview-item"><img src="${url}" alt="Current photo ${i + 1}" loading="lazy"></div>`
-        ).join('');
-    }
+    function renderEditPhotos() {
+        const grid = document.getElementById('all-photo-previews');
+        const hint = document.getElementById('photos-count-hint');
+        const label = document.getElementById('photos-upload-label');
+        const total = savedPhotos.length + pendingFiles.length;
+        hint.textContent = `${total} / 10 photos`;
+        label.style.display = total >= 10 ? 'none' : '';
 
-    document.getElementById('photos').addEventListener('change', (e) => {
-        const previewGrid = document.getElementById('photo-previews');
-        previewGrid.innerHTML = '';
-        Array.from(e.target.files).forEach(file => {
+        grid.innerHTML = '';
+
+        savedPhotos.forEach((url, i) => {
             const div = document.createElement('div');
             div.className = 'photo-preview-item';
-            div.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="New photo preview">`;
-            previewGrid.appendChild(div);
+            div.innerHTML = `
+                <img src="${url}" alt="Photo ${i + 1}" loading="lazy">
+                <button type="button" class="photo-remove-btn" aria-label="Remove photo" onclick="removeSavedPhoto(${i})">&#x2715;</button>`;
+            grid.appendChild(div);
         });
+
+        pendingFiles.forEach((file, i) => {
+            const div = document.createElement('div');
+            div.className = 'photo-preview-item';
+            const url = URL.createObjectURL(file);
+            div.innerHTML = `
+                <img src="${url}" alt="New photo ${i + 1}">
+                <button type="button" class="photo-remove-btn" aria-label="Remove photo" onclick="removePendingPhoto(${i})">&#x2715;</button>`;
+            grid.appendChild(div);
+        });
+    }
+
+    window.removeSavedPhoto = (i) => { savedPhotos.splice(i, 1); renderEditPhotos(); };
+    window.removePendingPhoto = (i) => { pendingFiles.splice(i, 1); renderEditPhotos(); };
+
+    renderEditPhotos();
+
+    document.getElementById('photos').addEventListener('change', (e) => {
+        const slots = 10 - savedPhotos.length - pendingFiles.length;
+        const incoming = Array.from(e.target.files).slice(0, slots);
+        if (e.target.files.length > slots) {
+            showToast(`Only ${slots} more photo(s) can be added (10 max total).`, 'error');
+        }
+        pendingFiles.push(...incoming);
+        e.target.value = '';
+        renderEditPhotos();
     });
 
     form.addEventListener('submit', async (event) => {
@@ -933,11 +1044,11 @@ async function initEditPlaceForm() {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Saving…';
 
-        let photos = currentPhotos;
-        const photoFiles = document.getElementById('photos').files;
-        if (photoFiles.length > 0) {
+        let photos = [...savedPhotos];
+
+        if (pendingFiles.length > 0) {
             const formData = new FormData();
-            Array.from(photoFiles).forEach(f => formData.append('photos[]', f));
+            pendingFiles.forEach(f => formData.append('photos[]', f));
             const uploadRes = await fetch('http://127.0.0.1:5000/api/v1/upload', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
@@ -949,7 +1060,7 @@ async function initEditPlaceForm() {
                 submitBtn.textContent = 'Save changes';
                 return;
             }
-            photos = (await uploadRes.json()).photo_urls;
+            photos = [...photos, ...(await uploadRes.json()).photo_urls];
         }
 
         const selectedAmenities = Array.from(
@@ -962,7 +1073,7 @@ async function initEditPlaceForm() {
             price: parseFloat(document.getElementById('price').value),
             latitude: parseFloat(document.getElementById('latitude').value),
             longitude: parseFloat(document.getElementById('longitude').value),
-            photos: photos.length > 0 ? JSON.stringify(photos) : null,
+            photos: JSON.stringify(photos),
             amenities: selectedAmenities
         };
 
