@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="hbnb — Find unique places to stay, hosted by real people around the world.">
-    <title>hbnb — Find your next stay</title>
+    <meta name="description" content="hbnb — Discover extraordinary habitats across the galaxy. Your next world awaits beyond the stars.">
+    <title>hbnb — Find your next world</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
@@ -28,23 +28,23 @@
         <div class="s-features__inner">
             <p class="s-features__eyebrow" data-reveal>Why hbnb</p>
             <h2 class="s-features__title" data-reveal="delay-1">
-                Travel<br>differently.
+                Navigate<br>differently.
             </h2>
             <div class="s-features__grid">
                 <div class="s-feature" data-reveal="delay-1">
                     <div class="s-feature__num">01</div>
-                    <h3>Unique stays</h3>
-                    <p>From city lofts to countryside hideaways — places you won't find anywhere else.</p>
+                    <h3>Uncharted worlds</h3>
+                    <p>Habitats you won't find in any standard registry.</p>
                 </div>
                 <div class="s-feature" data-reveal="delay-2">
                     <div class="s-feature__num">02</div>
-                    <h3>Real hosts</h3>
-                    <p>Connect with people who live and breathe their city. Local tips, real advice.</p>
+                    <h3>Verified keepers</h3>
+                    <p>Every habitat is managed by a certified keeper. Mission logs, safety records, insider intel across all 47 jurisdictions.</p>
                 </div>
                 <div class="s-feature" data-reveal="delay-3">
                     <div class="s-feature__num">03</div>
                     <h3>Any budget</h3>
-                    <p>Filter by price and amenities. Find your perfect match in seconds.</p>
+                    <p>Set your rate filter and system requirements. Lock your next habitat in seconds.</p>
                 </div>
             </div>
         </div>
@@ -62,7 +62,7 @@
     <!-- ── EXPLORE ─────────────────────────────────────── -->
     <main id="main-content" class="s-explore">
         <div class="s-explore__inner">
-            <h2 class="s-explore__heading" data-reveal>Explore all <em>places</em></h2>
+            <h2 class="s-explore__heading" data-reveal>Scan all <em>habitats</em></h2>
 
             <div id="filter" role="search" aria-label="Filter and sort places">
                 <!-- Search row -->
@@ -74,8 +74,8 @@
                         type="text"
                         id="search-input"
                         class="filter-search-input"
-                        placeholder="Search by title, city…"
-                        aria-label="Search places"
+                        placeholder="Search by designation, colony, sector…"
+                        aria-label="Search habitats"
                         autocomplete="off"
                     >
                     <button class="filter-clear-btn" id="filter-reset" aria-label="Clear filters" title="Reset">
@@ -86,23 +86,23 @@
                 <div class="filter-chips-row">
                     <div class="filter-chip">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-                        <select id="price-filter" class="filter-chip-select" aria-label="Max price">
-                            <option value="all">Any price</option>
-                            <option value="50">Up to $50</option>
-                            <option value="100">Up to $100</option>
-                            <option value="150">Up to $150</option>
-                            <option value="200">Up to $200</option>
+                        <select id="price-filter" class="filter-chip-select" aria-label="Max rate per cycle">
+                            <option value="all">Any rate</option>
+                            <option value="50">≤ $50 / cycle</option>
+                            <option value="100">≤ $100 / cycle</option>
+                            <option value="150">≤ $150 / cycle</option>
+                            <option value="200">≤ $200 / cycle</option>
                         </select>
                     </div>
                     <div class="filter-chip">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
                         <select id="sort-select" class="filter-chip-select" aria-label="Sort by">
-                            <option value="default">Featured</option>
-                            <option value="name-asc">Name A → Z</option>
-                            <option value="name-desc">Name Z → A</option>
-                            <option value="price-asc">Price ↑</option>
-                            <option value="price-desc">Price ↓</option>
-                            <option value="location-asc">Location A → Z</option>
+                            <option value="default">Highlighted</option>
+                            <option value="name-asc">Designation A → Z</option>
+                            <option value="name-desc">Designation Z → A</option>
+                            <option value="price-asc">Rate ↑</option>
+                            <option value="price-desc">Rate ↓</option>
+                            <option value="location-asc">Colony A → Z</option>
                         </select>
                     </div>
                     <span class="filter-results-count" id="filter-count"></span>

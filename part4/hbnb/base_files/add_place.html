@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="List your place on hbnb and start welcoming guests.">
-    <title>Add a Place — hbnb</title>
+    <meta name="description" content="Register your habitat on hbnb and start welcoming explorers from across the galaxy.">
+    <title>Register a Habitat — hbnb</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
@@ -14,61 +14,61 @@
     <div id="header"></div>
     <main id="main-content">
         <div class="add-place-page">
-            <h1 class="page-title">Add a Place</h1>
+            <h1 class="page-title">Register a Habitat</h1>
 
-            <form id="add-place-form" novalidate aria-label="Add place form">
+            <form id="add-place-form" novalidate aria-label="Register habitat form">
 
                 <div class="form-section">
-                    <h2 class="form-section-title">Basic information</h2>
+                    <h2 class="form-section-title">Habitat designation</h2>
                     <div class="form-row">
                         <div class="form-field">
-                            <label for="title">Title</label>
-                            <input type="text" id="title" name="title" placeholder="Give your place a title" autocomplete="off" required aria-required="true">
+                            <label for="title">Station name</label>
+                            <input type="text" id="title" name="title" placeholder="Give your habitat a designation…" autocomplete="off" required aria-required="true">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-field">
-                            <label for="description">Description</label>
-                            <textarea id="description" name="description" placeholder="Describe your place…" required aria-required="true"></textarea>
+                            <label for="description">Atmospheric briefing</label>
+                            <textarea id="description" name="description" placeholder="Describe the atmosphere, surroundings, and what makes this habitat unique across the galaxy…" required aria-required="true"></textarea>
                         </div>
                     </div>
                     <div class="form-row two-cols">
                         <div class="form-field">
-                            <label for="price">Price per night ($)</label>
+                            <label for="price">Rate per cycle ($)</label>
                             <input type="number" id="price" name="price" min="1" step="0.01" placeholder="0.00" required aria-required="true">
                         </div>
                         <div class="form-field">
-                            <label for="latitude">Latitude</label>
+                            <label for="latitude">Orbital latitude</label>
                             <input type="number" id="latitude" name="latitude" step="any" min="-90" max="90" placeholder="48.8566" required aria-required="true">
                         </div>
                         <div class="form-field">
-                            <label for="longitude">Longitude</label>
+                            <label for="longitude">Orbital longitude</label>
                             <input type="number" id="longitude" name="longitude" step="any" min="-180" max="180" placeholder="2.3522" required aria-required="true">
                         </div>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <h2 class="form-section-title">Amenities</h2>
-                    <div id="amenities-list" class="amenities-grid" role="group" aria-label="Select amenities">
-                        <p class="loading-text">Loading amenities…</p>
+                    <h2 class="form-section-title">On-board systems</h2>
+                    <div id="amenities-list" class="amenities-grid" role="group" aria-label="Select on-board systems">
+                        <p class="loading-text">Scanning available systems…</p>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <h2 class="form-section-title">Photos</h2>
-                    <p class="form-section-desc" id="photos-hint">0 / 10 photos</p>
-                    <div id="photo-previews" class="photo-previews-grid" aria-label="Photo previews"></div>
+                    <h2 class="form-section-title">Visual scans</h2>
+                    <p class="form-section-desc" id="photos-hint">0 / 10 scans</p>
+                    <div id="photo-previews" class="photo-previews-grid" aria-label="Visual scan previews"></div>
                     <label class="photo-upload-area" for="photos" style="margin-top:1rem;">
-                        <span class="photo-upload-icon" aria-hidden="true">📷</span>
-                        <span class="photo-upload-text">Click to add photos</span>
-                        <span class="photo-upload-hint">PNG, JPG, WEBP — 10 max total</span>
+                        <span class="photo-upload-icon" aria-hidden="true">🛸</span>
+                        <span class="photo-upload-text">Upload visual scans</span>
+                        <span class="photo-upload-hint">PNG, JPG, WEBP — 10 scans maximum</span>
                         <input type="file" id="photos" name="photos" accept="image/*" multiple style="display:none;" aria-describedby="photos-hint">
                     </label>
                 </div>
 
                 <div class="form-submit-row">
-                    <button type="submit" class="btn-save">Publish my place</button>
+                    <button type="submit" class="btn-save">Broadcast habitat</button>
                 </div>
 
             </form>

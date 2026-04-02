@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Manage your personal information on hbnb.">
-    <title>My Profile — hbnb</title>
+    <meta name="description" content="Manage your navigator file on hbnb. Update your designation and keep your pilot records current.">
+    <title>Navigator File — hbnb</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
@@ -18,35 +18,35 @@
             <aside class="profile-sidebar" aria-label="Profile summary">
                 <div class="profile-avatar" id="profile-avatar" aria-hidden="true">?</div>
                 <p class="profile-name" id="profile-fullname">Loading…</p>
-                <p class="profile-since">Member since 2026</p>
+                <p class="profile-since">Enlisted 2026</p>
             </aside>
 
             <div class="profile-content">
-                <h1 class="profile-title">Personal information</h1>
-                <p class="profile-subtitle">Update your name below. Email changes must be done by an admin.</p>
+                <h1 class="profile-title">Navigator identification</h1>
+                <p class="profile-subtitle">Update your designation below. Frequency changes must be authorized by Command.</p>
 
-                <form id="profile-form" novalidate aria-label="Edit profile">
+                <form id="profile-form" novalidate aria-label="Edit navigator file">
                     <div class="profile-field-group">
                         <div class="profile-field">
-                            <label for="first_name">First Name</label>
+                            <label for="first_name">First designation</label>
                             <input
                                 type="text"
                                 id="first_name"
                                 name="first_name"
                                 autocomplete="given-name"
-                                placeholder="First name"
+                                placeholder="First designation"
                                 required
                                 aria-required="true"
                             >
                         </div>
                         <div class="profile-field">
-                            <label for="last_name">Last Name</label>
+                            <label for="last_name">Family callsign</label>
                             <input
                                 type="text"
                                 id="last_name"
                                 name="last_name"
                                 autocomplete="family-name"
-                                placeholder="Last name"
+                                placeholder="Family callsign"
                                 required
                                 aria-required="true"
                             >
@@ -54,7 +54,7 @@
                     </div>
 
                     <div class="profile-actions">
-                        <button type="submit" class="btn-save">Save changes</button>
+                        <button type="submit" class="btn-save">Sync file</button>
                     </div>
                 </form>
             </div>

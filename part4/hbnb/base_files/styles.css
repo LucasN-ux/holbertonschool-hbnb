@@ -548,9 +548,9 @@ header.scrolled button[onclick="logout()"]:hover {
 .marquee-card img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease); display: block; }
 .marquee-card:hover img { transform: scale(1.06); }
 .marquee-card-no-photo {
-    width: 100%; height: 100%; background: var(--surface-active);
-    display: flex; align-items: center; justify-content: center; font-size: 4rem;
+    width: 100%; height: 100%; overflow: hidden;
 }
+.marquee-card-no-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .marquee-card__overlay {
     position: absolute; inset: 0;
     background: linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.20) 45%, transparent 100%);
@@ -831,11 +831,10 @@ main:not(.s-explore) {
 
 .place-card-no-photo {
     width: 100%; height: 100%;
-    background: linear-gradient(135deg, #1a1a1a 0%, #111827 100%);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 3.5rem;
+    overflow: hidden;
     transition: transform .5s var(--ease);
 }
+.place-card-no-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .place-card:hover .place-card-no-photo { transform: scale(1.04); }
 
 /* Prix — en bas à droite de l'image, au-dessus du dégradé */
@@ -944,10 +943,10 @@ main:not(.s-explore) {
     border-radius: var(--r); margin-bottom: 2rem; border: 1px solid var(--border);
 }
 .place-details-no-photo {
-    width: 100%; height: 300px; background: var(--bg-3); border-radius: var(--r);
+    width: 100%; height: 300px; border-radius: var(--r);
     border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 4rem; margin-bottom: 2rem; opacity: 0.5;
+    overflow: hidden;
+    margin-bottom: 2rem;
 }
 
 .place-details-header { margin-bottom: 1.5rem; }
@@ -1131,7 +1130,7 @@ form p a:hover { color: var(--text-primary); }
 .my-place-card:hover { border-color: var(--border-hover); background: var(--surface-hover); transform: translateY(-2px); }
 .my-place-photo { height: 130px; overflow: hidden; }
 .my-place-photo img, .my-place-photo .place-card-no-photo {
-    width: 160px; height: 130px; object-fit: cover; font-size: 2.5rem;
+    width: 160px; height: 130px; object-fit: cover;
     transition: transform .35s var(--ease); opacity: 0.85;
 }
 .my-place-card:hover .my-place-photo img { transform: scale(1.05); opacity: 1; }

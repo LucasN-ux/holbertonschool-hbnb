@@ -230,18 +230,18 @@ function checkAuthentication() {
 
         if (loginLink) {
             loginLink.outerHTML = isAdmin
-                ? `<a href="admin.html" class="btn-outline">Admin Panel</a>
-                   <button class="btn-primary" onclick="logout()" aria-label="Log out of your account">Logout</button>`
-                : `<a href="my_places.html" class="btn-outline">My Places</a>
+                ? `<a href="admin.html" class="btn-outline">Control Room</a>
+                   <button class="btn-primary" onclick="logout()" aria-label="Logout from account">Logout</button>`
+                : `<a href="my_places.html" class="btn-outline">My Stations</a>
                    <a href="profile.html" class="btn-outline">My Profile</a>
-                   <button class="btn-primary" onclick="logout()" aria-label="Log out of your account">Logout</button>`;
+                   <button class="btn-primary" onclick="logout()" aria-label="Logout from account">Logout</button>`;
         }
 
         if (mobileLinks) {
             mobileLinks.innerHTML = isAdmin
-                ? `<a href="admin.html">Admin Panel</a>
+                ? `<a href="admin.html">Control Room</a>
                    <a href="#" onclick="logout();return false;">Logout</a>`
-                : `<a href="my_places.html">My Places</a>
+                : `<a href="my_places.html">My Stations</a>
                    <a href="profile.html">My Profile</a>
                    <a href="#" onclick="logout();return false;">Logout</a>`;
         }
@@ -257,7 +257,7 @@ async function fetchPlaces(token) {
     const container = document.getElementById('places-list');
     if (!container) return;
 
-    container.innerHTML = '<div class="loading-state"><span class="spinner" aria-hidden="true"></span>Loading places...</div>';
+    container.innerHTML = '<div class="loading-state"><span class="spinner" aria-hidden="true"></span>Scanning habitats…</div>';
     container.setAttribute('aria-busy', 'true');
 
     const headers = { 'Content-Type': 'application/json' };
@@ -272,10 +272,10 @@ async function fetchPlaces(token) {
             displayPlaces(allPlaces);
             buildMarquee(allPlaces);
         } else {
-            container.innerHTML = '<p class="loading-text">Could not load places.</p>';
+            container.innerHTML = '<p class="loading-text">Transmission interrupted. Habitats unavailable.</p>';
         }
     } catch {
-        container.innerHTML = '<p class="loading-text">Could not connect to server.</p>';
+        container.innerHTML = '<p class="loading-text">No signal detected. Check your connection.</p>';
     } finally {
         container.setAttribute('aria-busy', 'false');
     }
@@ -290,8 +290,8 @@ function displayPlaces(places) {
     if (places.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <div class="empty-state-icon">🏡</div>
-                <p>No places found matching your filters.</p>
+                <div class="empty-state-icon">🪐</div>
+                <p>No habitats match your search parameters.</p>
             </div>`;
         return;
     }
@@ -308,12 +308,12 @@ function displayPlaces(places) {
         const priceDisplay = place.price != null ? `$${place.price}` : 'N/A';
 
         card.innerHTML = `
-            <a href="place.html?id=${place.id}" class="place-card-link" aria-label="View ${place.title}, ${priceDisplay} per night">
+            <a href="place.html?id=${place.id}" class="place-card-link" aria-label="Scout ${place.title}, ${priceDisplay} per cycle">
                 <div class="place-card-image">
                     ${firstPhoto
                         ? `<img src="${firstPhoto}" alt="${place.title}" loading="lazy">`
-                        : `<div class="place-card-no-photo" aria-hidden="true">🏠</div>`}
-                    <div class="place-card-price">${priceDisplay} <span>/ night</span></div>
+                        : `<div class="place-card-no-photo" aria-hidden="true"><img src="images/no_picture.jpg" alt="No visual scan" style="width:100%;height:100%;object-fit:cover;"></div>`}
+                    <div class="place-card-price">${priceDisplay} <span>/ cycle</span></div>
                 </div>
                 <div class="place-card-body">
                     <h2 class="place-card-title">${place.title}</h2>
@@ -391,11 +391,11 @@ async function initPlaceDetails() {
     const token = getCookie('token');
 
     if (!placeId) {
-        container.innerHTML = '<p>No place selected.</p>';
+        container.innerHTML = '<p>No habitat selected.</p>';
         return;
     }
 
-    container.innerHTML = '<div class="loading-state"><span class="spinner" aria-hidden="true"></span>Loading place...</div>';
+    container.innerHTML = '<div class="loading-state"><span class="spinner" aria-hidden="true"></span>Initializing habitat data…</div>';
 
     const headers = { 'Content-Type': 'application/json' };
     if (token) {
@@ -405,7 +405,7 @@ async function initPlaceDetails() {
     const response = await fetch(`http://127.0.0.1:5000/api/v1/places/${placeId}`, { headers });
 
     if (!response.ok) {
-        container.innerHTML = '<p>Place not found.</p>';
+        container.innerHTML = '<p>Habitat not found in registry.</p>';
         return;
     }
 
@@ -421,13 +421,13 @@ async function initPlaceDetails() {
         ? `<div class="place-photos-gallery" role="img" aria-label="Photos of ${place.title}">
             ${photos.map((url, i) => `<img src="${url}" alt="${place.title} — photo ${i + 1}" class="${i === 0 ? 'gallery-main' : 'gallery-thumb'}" loading="${i === 0 ? 'eager' : 'lazy'}">`).join('')}
            </div>`
-        : `<div class="place-details-no-photo" aria-hidden="true">🏠</div>`;
+        : `<div class="place-details-no-photo" aria-hidden="true"><img src="images/no_picture.jpg" alt="No visual scan" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;"></div>`;
 
     const payload = token ? getTokenPayload(token) : null;
     const isOwner = payload && payload.sub === place.owner.id;
     const reviewBtnHTML = (token && !isOwner)
         ? `<hr class="booking-divider">
-           <a href="add_review.html?id=${place.id}" class="btn-review">Add a Review</a>`
+           <a href="add_review.html?id=${place.id}" class="btn-review">File Mission Log</a>`
         : '';
 
     container.innerHTML = `
@@ -439,24 +439,24 @@ async function initPlaceDetails() {
                 </div>
                 <div class="place-info-grid">
                     <div class="place-info-card">
-                        <div class="label" id="host-label">Host</div>
+                        <div class="label" id="host-label">Keeper</div>
                         <div class="value" aria-labelledby="host-label">${place.owner.first_name} ${place.owner.last_name}</div>
                     </div>
                     <div class="place-info-card">
-                        <div class="label" id="price-label">Price per night</div>
+                        <div class="label" id="price-label">Rate / cycle</div>
                         <div class="value" aria-labelledby="price-label">$${place.price}</div>
                     </div>
                     <div class="place-info-card">
-                        <div class="label" id="amenities-label">Amenities</div>
+                        <div class="label" id="amenities-label">Systems</div>
                         <div class="value" aria-labelledby="amenities-label">${place.amenities.map(a => a.name).join(', ') || 'None'}</div>
                     </div>
                 </div>
-                <div class="place-description">${place.description || 'No description provided.'}</div>
+                <div class="place-description">${place.description || 'No atmospheric briefing provided.'}</div>
             </div>
             <aside class="place-sidebar">
                 <div class="booking-card" id="booking-card">
-                    <div class="booking-price">$${place.price} <span>/ night</span></div>
-                    <p class="booking-meta">Hosted by ${place.owner.first_name} ${place.owner.last_name}</p>
+                    <div class="booking-price">$${place.price} <span>/ cycle</span></div>
+                    <p class="booking-meta">Kept by ${place.owner.first_name} ${place.owner.last_name}</p>
                     ${reviewBtnHTML}
                 </div>
             </aside>
@@ -479,20 +479,20 @@ async function renderReviews() {
     container.setAttribute('aria-busy', 'false');
 
     if (!response.ok) {
-        container.innerHTML = '<p>No reviews yet.</p>';
+        container.innerHTML = '<p>No mission logs filed yet.</p>';
         return;
     }
 
     const reviews = await response.json();
 
     if (reviews.length === 0) {
-        container.innerHTML = '<p>No reviews yet.</p>';
+        container.innerHTML = '<p>No mission logs filed yet.</p>';
         return;
     }
 
     const title = document.createElement('h2');
     title.className = 'section-title';
-    title.textContent = `Reviews (${reviews.length})`;
+    title.textContent = `Mission Logs (${reviews.length})`;
     container.appendChild(title);
 
     reviews.forEach(review => {
@@ -503,7 +503,7 @@ async function renderReviews() {
 
         card.innerHTML = `
             <div class="review-header">
-                <div class="review-avatar" aria-hidden="true">G</div>
+                <div class="review-avatar" aria-hidden="true">E</div>
                 <div>
                     <div class="review-stars" aria-label="${review.rating} out of 5 stars">${filledStars}${emptyStars}</div>
                 </div>
@@ -549,7 +549,7 @@ function initLogin() {
         const submitBtn = loginForm.querySelector('button[type="submit"]');
 
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Logging in…';
+        submitBtn.textContent = 'Initiating sequence…';
 
         const response = await fetch('http://127.0.0.1:5000/api/v1/auth/login', {
             method: 'POST',
@@ -558,7 +558,7 @@ function initLogin() {
         });
 
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Login';
+        submitBtn.textContent = 'Initiate sequence';
 
         if (response.ok) {
             const data = await response.json();
@@ -566,7 +566,7 @@ function initLogin() {
             const payload = getTokenPayload(data.access_token);
             window.location.href = (payload && payload.is_admin) ? 'admin.html' : 'index.html';
         } else {
-            showToast('Invalid email or password. Please try again.', 'error');
+            showToast('Access denied. Invalid frequency or cipher.', 'error');
             document.getElementById('password').value = '';
             document.getElementById('password').focus();
         }
@@ -581,6 +581,13 @@ function initRegisterForm() {
     const showRegister = document.getElementById('show-register');
     const showLogin = document.getElementById('show-login');
     const loginForm = document.getElementById('login-form');
+
+    // Auto-show register form if ?register=1 is in the URL
+    if (new URLSearchParams(window.location.search).get('register') === '1') {
+        if (loginForm) loginForm.style.display = 'none';
+        form.style.display = 'flex';
+        form.querySelector('input')?.focus();
+    }
 
     if (showRegister) {
         showRegister.addEventListener('click', (e) => {
@@ -605,7 +612,7 @@ function initRegisterForm() {
 
         const submitBtn = form.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Creating account…';
+        submitBtn.textContent = 'Enlisting…';
 
         const data = {
             first_name: document.getElementById('first_name').value,
@@ -621,17 +628,17 @@ function initRegisterForm() {
         });
 
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Register';
+        submitBtn.textContent = 'Enlist';
 
         if (response.ok) {
-            showToast('Account created! You can now login.', 'success');
+            showToast('Navigator registered. Initiate sequence to board.', 'success');
             form.reset();
             form.style.display = 'none';
             loginForm.style.display = 'flex';
             document.getElementById('email').focus();
         } else {
             const err = await response.json();
-            showToast(err.error || 'Registration failed. Please try again.', 'error');
+            showToast(err.error || 'Enlistment failed. Please retry.', 'error');
         }
     });
 }
@@ -659,7 +666,7 @@ function initReviewForm() {
     for (let i = 1; i <= 5; i++) {
         const option = document.createElement('option');
         option.value = i;
-        option.textContent = `${i} Star${i > 1 ? 's' : ''}`;
+        option.textContent = `${i} Signal${i > 1 ? 's' : ''}`;
         ratingSelect.appendChild(option);
     }
 
@@ -668,7 +675,7 @@ function initReviewForm() {
 
         const submitBtn = reviewForm.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Submitting…';
+        submitBtn.textContent = 'Transmitting…';
 
         const reviewText = document.getElementById('review').value;
         const rating = document.getElementById('rating').value;
@@ -676,14 +683,14 @@ function initReviewForm() {
         const response = await submitReview(token, placeId, reviewText, rating);
 
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit Review';
+        submitBtn.textContent = 'Transmit log';
 
         if (response.ok) {
-            showToast('Review submitted successfully!', 'success');
+            showToast('Mission log transmitted successfully!', 'success');
             reviewForm.reset();
             setTimeout(() => window.history.back(), 1500);
         } else {
-            showToast('Failed to submit review. Please try again.', 'error');
+            showToast('Transmission failed. Please retry.', 'error');
         }
     });
 }
@@ -698,7 +705,7 @@ async function initProfileForm() {
     const userId = payload?.sub;
 
     if (!userId) {
-        showToast('Invalid session. Please login again.', 'error');
+        showToast('Session expired. Please re-authenticate.', 'error');
         setTimeout(() => window.location.href = 'login.html', 1500);
         return;
     }
@@ -723,7 +730,7 @@ async function initProfileForm() {
 
         const submitBtn = form.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Saving…';
+        submitBtn.textContent = 'Syncing…';
 
         const data = {
             first_name: document.getElementById('first_name').value,
@@ -740,10 +747,10 @@ async function initProfileForm() {
         });
 
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Save changes';
+        submitBtn.textContent = 'Sync file';
 
         if (res.ok) {
-            showToast('Profile updated successfully!', 'success');
+            showToast('Navigator file synchronized.', 'success');
             const avatar = document.getElementById('profile-avatar');
             const fullname = document.getElementById('profile-fullname');
             if (avatar) avatar.textContent = (data.first_name[0] + data.last_name[0]).toUpperCase();
@@ -770,7 +777,7 @@ async function initAddPlaceForm() {
         if (res.ok) {
             const amenities = await res.json();
             if (amenities.length === 0) {
-                amenitiesContainer.innerHTML = '<p class="loading-text">No amenities available.</p>';
+                amenitiesContainer.innerHTML = '<p class="loading-text">No systems available.</p>';
             } else {
                 amenitiesContainer.innerHTML = amenities.map(a => `
                     <label class="amenity-checkbox">
@@ -781,7 +788,7 @@ async function initAddPlaceForm() {
             }
         }
     } catch {
-        amenitiesContainer.innerHTML = '<p class="loading-text">Could not load amenities.</p>';
+        amenitiesContainer.innerHTML = '<p class="loading-text">Unable to scan available systems.</p>';
     }
 
     let addPlaceFiles = [];
@@ -790,7 +797,7 @@ async function initAddPlaceForm() {
         const grid = document.getElementById('photo-previews');
         const hint = document.getElementById('photos-hint');
         const label = document.querySelector('label.photo-upload-area');
-        hint.textContent = `${addPlaceFiles.length} / 10 photos`;
+        hint.textContent = `${addPlaceFiles.length} / 10 scans`;
         if (label) label.style.display = addPlaceFiles.length >= 10 ? 'none' : '';
         grid.innerHTML = '';
         addPlaceFiles.forEach((file, i) => {
@@ -809,7 +816,7 @@ async function initAddPlaceForm() {
         const slots = 10 - addPlaceFiles.length;
         const incoming = Array.from(e.target.files).slice(0, slots);
         if (e.target.files.length > slots) {
-            showToast(`Only ${slots} more photo(s) can be added (10 max total).`, 'error');
+            showToast(`Only ${slots} more scan(s) can be uploaded (10 max).`, 'error');
         }
         addPlaceFiles.push(...incoming);
         e.target.value = '';
@@ -821,7 +828,7 @@ async function initAddPlaceForm() {
 
         const submitBtn = form.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Publishing…';
+        submitBtn.textContent = 'Broadcasting…';
 
         let photos = [];
         if (addPlaceFiles.length > 0) {
@@ -835,9 +842,9 @@ async function initAddPlaceForm() {
             });
 
             if (!uploadRes.ok) {
-                showToast('Photo upload failed. Please try again.', 'error');
+                showToast('Visual scan upload failed. Please retry.', 'error');
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Publish my place';
+                submitBtn.textContent = 'Broadcast habitat';
                 return;
             }
             photos = (await uploadRes.json()).photo_urls;
@@ -867,14 +874,14 @@ async function initAddPlaceForm() {
         });
 
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Publish my place';
+        submitBtn.textContent = 'Broadcast habitat';
 
         if (response.ok) {
-            showToast('Place published successfully!', 'success');
+            showToast('Habitat broadcast to the network!', 'success');
             setTimeout(() => window.location.href = 'my_places.html', 1500);
         } else {
             const err = await response.json();
-            showToast(err.error || 'Failed to add place. Please try again.', 'error');
+            showToast(err.error || 'Broadcast failed. Please retry.', 'error');
         }
     });
 }
@@ -888,7 +895,7 @@ async function initMyPlaces() {
     const payload = getTokenPayload(token);
     const userId = payload?.sub;
 
-    container.innerHTML = '<div class="loading-state"><span class="spinner" aria-hidden="true"></span>Loading your places…</div>';
+    container.innerHTML = '<div class="loading-state"><span class="spinner" aria-hidden="true"></span>Scanning your stations…</div>';
     container.setAttribute('aria-busy', 'true');
 
     const res = await fetch(
@@ -899,7 +906,7 @@ async function initMyPlaces() {
     container.setAttribute('aria-busy', 'false');
 
     if (!res.ok) {
-        container.innerHTML = '<p class="loading-text">Could not load your places.</p>';
+        container.innerHTML = '<p class="loading-text">Unable to retrieve your stations. Signal lost.</p>';
         return;
     }
 
@@ -908,8 +915,9 @@ async function initMyPlaces() {
     if (places.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <p>You have no places yet.</p>
-                <a href="add_place.html" class="btn-save" style="display:inline-block;width:auto;padding:0.75rem 1.5rem;">Add your first place</a>
+                <div class="empty-state-icon">🛸</div>
+                <p>No habitats registered yet. The galaxy awaits.</p>
+                <a href="add_place.html" class="btn-save" style="display:inline-block;width:auto;padding:0.75rem 1.5rem;">Register your first habitat</a>
             </div>`;
         return;
     }
@@ -925,16 +933,16 @@ async function initMyPlaces() {
             <div class="my-place-photo">
                 ${photos[0]
                     ? `<img src="${photos[0]}" alt="${place.title}" loading="lazy">`
-                    : `<div class="place-card-no-photo" aria-hidden="true">🏠</div>`}
+                    : `<div class="place-card-no-photo" aria-hidden="true"><img src="images/no_picture.jpg" alt="No visual scan" style="width:100%;height:100%;object-fit:cover;"></div>`}
             </div>
             <div class="my-place-info">
                 <h3>${place.title}</h3>
-                <p class="price">$${place.price} <span>/ night</span></p>
+                <p class="price">$${place.price} <span>/ cycle</span></p>
                 <p class="description">${place.description || ''}</p>
             </div>
             <div class="my-place-actions">
-                <a href="place.html?id=${place.id}" class="btn-outline" aria-label="View ${place.title}">View</a>
-                <a href="edit_place.html?id=${place.id}" class="btn-save" style="width:auto;padding:0.5rem 1.25rem;" aria-label="Edit ${place.title}">Edit</a>
+                <a href="place.html?id=${place.id}" class="btn-outline" aria-label="Scout ${place.title}">Scout</a>
+                <a href="edit_place.html?id=${place.id}" class="btn-save" style="width:auto;padding:0.5rem 1.25rem;" aria-label="Modify ${place.title}">Modify</a>
             </div>
         `;
         container.appendChild(card);
@@ -962,7 +970,7 @@ async function initEditPlaceForm() {
 
     const placeRes = await fetch(`http://127.0.0.1:5000/api/v1/places/${placeId}`);
     if (!placeRes.ok) {
-        showToast('Place not found.', 'error');
+        showToast('Habitat not found in registry.', 'error');
         setTimeout(() => window.location.href = 'my_places.html', 1500);
         return;
     }
@@ -977,7 +985,7 @@ async function initEditPlaceForm() {
 
     const currentAmenityIds = place.amenities.map(a => a.id);
     amenitiesContainer.innerHTML = allAmenities.length === 0
-        ? '<p class="loading-text">No amenities available.</p>'
+        ? '<p class="loading-text">No systems available.</p>'
         : allAmenities.map(a => `
             <label class="amenity-checkbox">
                 <input type="checkbox" name="amenities" value="${a.id}"
@@ -996,7 +1004,7 @@ async function initEditPlaceForm() {
         const hint = document.getElementById('photos-count-hint');
         const label = document.getElementById('photos-upload-label');
         const total = savedPhotos.length + pendingFiles.length;
-        hint.textContent = `${total} / 10 photos`;
+        hint.textContent = `${total} / 10 scans`;
         label.style.display = total >= 10 ? 'none' : '';
 
         grid.innerHTML = '';
@@ -1030,7 +1038,7 @@ async function initEditPlaceForm() {
         const slots = 10 - savedPhotos.length - pendingFiles.length;
         const incoming = Array.from(e.target.files).slice(0, slots);
         if (e.target.files.length > slots) {
-            showToast(`Only ${slots} more photo(s) can be added (10 max total).`, 'error');
+            showToast(`Only ${slots} more scan(s) can be uploaded (10 max).`, 'error');
         }
         pendingFiles.push(...incoming);
         e.target.value = '';
@@ -1042,7 +1050,7 @@ async function initEditPlaceForm() {
 
         const submitBtn = form.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Saving…';
+        submitBtn.textContent = 'Syncing…';
 
         let photos = [...savedPhotos];
 
@@ -1055,9 +1063,9 @@ async function initEditPlaceForm() {
                 body: formData
             });
             if (!uploadRes.ok) {
-                showToast('Photo upload failed. Please try again.', 'error');
+                showToast('Visual scan upload failed. Please retry.', 'error');
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Save changes';
+                submitBtn.textContent = 'Sync changes';
                 return;
             }
             photos = [...photos, ...(await uploadRes.json()).photo_urls];
@@ -1087,14 +1095,14 @@ async function initEditPlaceForm() {
         });
 
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Save changes';
+        submitBtn.textContent = 'Sync changes';
 
         if (res.ok) {
-            showToast('Place updated successfully!', 'success');
+            showToast('Habitat data synchronized.', 'success');
             setTimeout(() => window.location.href = 'my_places.html', 1500);
         } else {
             const err = await res.json();
-            showToast(err.error || 'Update failed. Please try again.', 'error');
+            showToast(err.error || 'Sync failed. Please retry.', 'error');
         }
     });
 }
@@ -1123,7 +1131,7 @@ function buildMarquee(places) {
         a.innerHTML = `
             ${photo
                 ? `<img src="${photo}" alt="${place.title}" loading="lazy">`
-                : `<div class="marquee-card-no-photo" aria-hidden="true">🏠</div>`}
+                : `<div class="marquee-card-no-photo" aria-hidden="true"><img src="images/no_picture.jpg" alt="No visual scan" style="width:100%;height:100%;object-fit:cover;"></div>`}
             <div class="marquee-card__overlay" aria-hidden="true"></div>
             <div class="marquee-card__info">
                 <div class="marquee-card__title">${place.title}</div>
