@@ -68,7 +68,8 @@ class UserList(Resource):
                 'id': u.id,
                 'first_name': u.first_name,
                 'last_name': u.last_name,
-                'email': u.email
+                'email': u.email,
+                'is_admin': u.is_admin
             }
             for u in users
         ], 200
@@ -92,6 +93,20 @@ class UserResource(Resource):
 
     @jwt_required()
     @api.doc(security='Bearer Auth')
+    @api.response(200, 'User deleted successfully')
+    @api.response(403, 'Admin access required')
+    @api.response(404, 'User not found')
+    def delete(self, user_id):
+        """Delete a user (admin only)"""
+        if not _is_admin():
+            return {'error': 'Admin access required'}, 403
+        deleted = facade.delete_user(user_id)
+        if not deleted:
+            return {'error': 'User not found'}, 404
+        return {'message': 'User deleted successfully'}, 200
+
+    @jwt_required()
+    @api.doc(security='Bearer Auth')
     @api.expect(admin_user_update_model, validate=False)
     @api.response(200, 'User updated successfully')
     @api.response(404, 'User not found')
@@ -108,9 +123,9 @@ class UserResource(Resource):
         if not is_admin and user_id != current_user:
             return {'error': 'Unauthorized action'}, 403
 
-        # Normal users cannot modify email or password
-        if not is_admin and ('email' in new_data or 'password' in new_data):
-            return {'error': 'You cannot modify email or password.'}, 400
+        # Normal users cannot modify email, password or is_admin
+        if not is_admin and ('email' in new_data or 'password' in new_data or 'is_admin' in new_data):
+            return {'error': 'You cannot modify email, password or admin status.'}, 400
 
         # If email is being changed, ensure uniqueness
         email = new_data.get('email')
@@ -133,3 +148,43 @@ class UserResource(Resource):
 
         except ValueError as e:
             return {'error': str(e)}, 400
+
+
+@api.route('/<user_id>/places')
+class UserPlaces(Resource):
+    @jwt_required()
+    @api.doc(security='Bearer Auth')
+    @api.response(200, 'Places retrieved successfully')
+    @api.response(403, 'Unauthorized action')
+    @api.response(404, 'User not found')
+    def get(self, user_id):
+        """Get all places owned by a user"""
+        current_user = get_jwt_identity()
+        is_admin = _is_admin()
+
+        if user_id != current_user and not is_admin:
+            return {'error': 'Unauthorized action'}, 403
+
+        user = facade.get_user(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
+
+        places = facade.get_all_places()
+        user_places = [p for p in places if p.owner.id == user_id]
+
+        return [
+            {
+                'id': p.id,
+                'title': p.title,
+                'price': p.price,
+                'photos': p.photos,
+                'description': p.description,
+                'latitude': p.latitude,
+                'longitude': p.longitude,
+                'amenities': [
+                    {'id': a.id, 'name': a.name}
+                    for a in p.amenities
+                ]
+            }
+            for p in user_places
+        ], 200

@@ -3,22 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Review</title>
+    <meta name="description" content="File a mission log after your stay. Your transmission helps future explorers navigate the galaxy.">
+    <title>File Mission Log — hbnb</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div id="header"></div>
-    <main>
-        <!-- Add something to idfentify the place you're reviewing -->
-        <form id="review-form">
-            <h2>Add a Review</h2>
-            <label for="review">Your Review:</label>
-            <textarea id="review" name="review" required></textarea>
-            <label for="rating">Rating:</label>
-            <select id="rating" name="rating" required>
-                <!-- Options for rating -->
+    <main id="main-content">
+        <form id="review-form" novalidate aria-label="Mission log form">
+            <h2>File a Mission Log</h2>
+            <label for="review">Your transmission</label>
+            <textarea
+                id="review"
+                name="review"
+                placeholder="Log your observations — atmospheric conditions, the keeper's hospitality, sector access, and anything future explorers should know…"
+                required
+                aria-required="true"
+                rows="5"
+            ></textarea>
+            <label for="rating">Signal strength</label>
+            <select id="rating" name="rating" required aria-required="true">
+                <!-- Options populated dynamically -->
             </select>
-            <button type="submit">Submit Review</button>
+            <button type="submit">Transmit log</button>
         </form>
     </main>
     <div id="footer"></div>

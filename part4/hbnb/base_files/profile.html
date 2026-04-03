@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manage your navigator file on hbnb. Update your designation and keep your pilot records current.">
+    <title>Navigator File — hbnb</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div id="header"></div>
+    <main id="main-content">
+        <div class="profile-page">
+
+            <aside class="profile-sidebar" aria-label="Profile summary">
+                <div class="profile-avatar" id="profile-avatar" aria-hidden="true">?</div>
+                <p class="profile-name" id="profile-fullname">Loading…</p>
+                <p class="profile-since">Enlisted 2026</p>
+            </aside>
+
+            <div class="profile-content">
+                <h1 class="profile-title">Navigator identification</h1>
+                <p class="profile-subtitle">Update your designation below. Frequency changes must be authorized by Command.</p>
+
+                <form id="profile-form" novalidate aria-label="Edit navigator file">
+                    <div class="profile-field-group">
+                        <div class="profile-field">
+                            <label for="first_name">First designation</label>
+                            <input
+                                type="text"
+                                id="first_name"
+                                name="first_name"
+                                autocomplete="given-name"
+                                placeholder="First designation"
+                                required
+                                aria-required="true"
+                            >
+                        </div>
+                        <div class="profile-field">
+                            <label for="last_name">Family callsign</label>
+                            <input
+                                type="text"
+                                id="last_name"
+                                name="last_name"
+                                autocomplete="family-name"
+                                placeholder="Family callsign"
+                                required
+                                aria-required="true"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button type="submit" class="btn-save">Sync file</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </main>
+    <div id="footer"></div>
+    <script src="scripts.js"></script>
+</body>
+</html>

@@ -18,7 +18,6 @@ facade = HBnBFacade()
 
 with app.app_context():
     db.create_all()
-    facade.bootstrap_admin()
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -23,19 +23,6 @@ class HBnBFacade:
         self.review_repo = ReviewRepository()
         self.amenity_repo = AmenityRepository()
 
-    def bootstrap_admin(self):
-        """Create an admin user if not exists"""
-        admin_email = "admin@example.com"
-        if not self.get_user_by_email(admin_email):
-            admin = User(
-                first_name="Admin",
-                last_name="Boss",
-                email=admin_email,
-                is_admin=True
-            )
-            admin.hash_password("admin123")
-            self.user_repo.add(admin)
-
     def create_user(self, user_data, password):
         if not User.validate_email_format(user_data['email']):
             raise ValueError("Invalid email format")
@@ -129,7 +116,8 @@ class HBnBFacade:
             price=place_data["price"],
             latitude=place_data["latitude"],
             longitude=place_data["longitude"],
-            owner=owner
+            owner=owner,
+            photos=place_data.get("photos")
         )
 
         amenities_ids = place_data.get("amenities", [])
@@ -163,7 +151,11 @@ class HBnBFacade:
                 place.add_amenity(amenity)
 
         clean_data = {}
-        for key in ["title", "description", "price", "latitude", "longitude"]:
+        updatable = [
+            "title", "description", "price",
+            "latitude", "longitude", "photos"
+        ]
+        for key in updatable:
             if key in place_data:
                 clean_data[key] = place_data[key]
                 setattr(place, key, place_data[key])
@@ -210,7 +202,11 @@ class HBnBFacade:
             return None
 
         reviews = self.review_repo.get_all()
-        return [review for review in reviews if getattr(review, 'place', None) and review.place.id == place_id]
+        return [
+            review for review in reviews
+            if getattr(review, 'place', None)
+            and review.place.id == place_id
+        ]
 
     def update_review(self, review_id, review_data):
         review = self.review_repo.get(review_id)
@@ -231,4 +227,25 @@ class HBnBFacade:
         if not review:
             return False
         self.review_repo.delete(review_id)
+        return True
+
+    def delete_user(self, user_id):
+        user = self.user_repo.get(user_id)
+        if not user:
+            return False
+        self.user_repo.delete(user_id)
+        return True
+
+    def delete_place(self, place_id):
+        place = self.place_repo.get(place_id)
+        if not place:
+            return False
+        self.place_repo.delete(place_id)
+        return True
+
+    def delete_amenity(self, amenity_id):
+        amenity = self.amenity_repo.get(amenity_id)
+        if not amenity:
+            return False
+        self.amenity_repo.delete(amenity_id)
         return True

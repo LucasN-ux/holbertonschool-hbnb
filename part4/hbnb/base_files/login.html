@@ -3,25 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <meta name="description" content="Access the hbnb network or enlist as a new navigator. Your gateway to the galaxy.">
+    <title>Access Portal — hbnb</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div id="header"></div>
-    <main>
-        <form id="login-form">
-            <h2>Login</h2>
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-            
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            
-            <button type="submit">Login</button>
+    <main id="main-content">
+        <form id="login-form" novalidate aria-label="Access portal form">
+            <h2>Clearance confirmed.<br>Welcome back, Navigator.</h2>
+            <label for="email">Comm frequency</label>
+            <input
+                type="email"
+                id="email"
+                name="email"
+                autocomplete="email"
+                placeholder="navigator@sector7.hbnb"
+                required
+                aria-required="true"
+            >
+
+            <label for="password">Access code</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                autocomplete="current-password"
+                placeholder="Enter your cipher"
+                required
+                aria-required="true"
+            >
+
+            <button type="submit">Initiate sequence</button>
+            <p>New to the galaxy? <a href="#" id="show-register">Enlist here</a></p>
+        </form>
+
+        <form id="register-form" style="display:none;" novalidate aria-label="Enlistment form">
+            <h2>Join the Fleet.</h2>
+            <label for="first_name">First designation</label>
+            <input
+                type="text"
+                id="first_name"
+                name="first_name"
+                autocomplete="given-name"
+                placeholder="Atlas"
+                required
+                aria-required="true"
+            >
+
+            <label for="last_name">Family callsign</label>
+            <input
+                type="text"
+                id="last_name"
+                name="last_name"
+                autocomplete="family-name"
+                placeholder="Vance"
+                required
+                aria-required="true"
+            >
+
+            <label for="reg-email">Comm frequency</label>
+            <input
+                type="email"
+                id="reg-email"
+                name="email"
+                autocomplete="email"
+                placeholder="navigator@sector7.hbnb"
+                required
+                aria-required="true"
+            >
+
+            <label for="reg-password">Access code</label>
+            <input
+                type="password"
+                id="reg-password"
+                name="password"
+                autocomplete="new-password"
+                placeholder="Create a secure cipher"
+                required
+                aria-required="true"
+                minlength="8"
+            >
+
+            <button type="submit">Enlist</button>
+            <p>Already a navigator? <a href="#" id="show-login">Access here</a></p>
         </form>
     </main>
     <div id="footer"></div>
     <script src="scripts.js"></script>
-
 </body>
 </html>

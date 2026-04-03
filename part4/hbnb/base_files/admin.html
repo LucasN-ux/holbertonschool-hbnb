@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hbnb — Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Josefin+Sans:wght@700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="header"></div>
+
+    <div class="admin-layout">
+        <!-- ── SIDEBAR ── -->
+        <aside class="admin-sidebar">
+            <p class="admin-sidebar-title">Navigation</p>
+            <button class="admin-nav-item active" data-section="dashboard" onclick="showSection('dashboard', this)">
+                <span class="admin-nav-icon">&#9632;</span> Dashboard
+            </button>
+            <button class="admin-nav-item" data-section="users" onclick="showSection('users', this)">
+                <span class="admin-nav-icon">&#9651;</span> Users
+            </button>
+            <button class="admin-nav-item" data-section="places" onclick="showSection('places', this)">
+                <span class="admin-nav-icon">&#9670;</span> Places
+            </button>
+            <button class="admin-nav-item" data-section="reviews" onclick="showSection('reviews', this)">
+                <span class="admin-nav-icon">&#9733;</span> Reviews
+            </button>
+            <button class="admin-nav-item" data-section="amenities" onclick="showSection('amenities', this)">
+                <span class="admin-nav-icon">&#9711;</span> Amenities
+            </button>
+            <div style="flex:1"></div>
+            <button class="admin-nav-item" onclick="logout()" style="margin-top:auto; color: rgba(232,112,112,0.70);">
+                <span class="admin-nav-icon">&#8592;</span> Logout
+            </button>
+        </aside>
+
+        <!-- ── MAIN ── -->
+        <main class="admin-main">
+
+            <!-- Dashboard -->
+            <section id="section-dashboard" class="admin-section active">
+                <div class="admin-header">
+                    <h1 class="admin-title">Dashboard</h1>
+                    <span class="admin-badge">&#9632; Admin</span>
+                </div>
+                <div class="admin-stats" id="admin-stats">
+                    <div class="admin-stat"><div class="admin-stat__label">Users</div><div class="admin-stat__value" id="stat-users">—</div></div>
+                    <div class="admin-stat"><div class="admin-stat__label">Places</div><div class="admin-stat__value" id="stat-places">—</div></div>
+                    <div class="admin-stat"><div class="admin-stat__label">Reviews</div><div class="admin-stat__value" id="stat-reviews">—</div></div>
+                    <div class="admin-stat"><div class="admin-stat__label">Amenities</div><div class="admin-stat__value" id="stat-amenities">—</div></div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
+                    <div class="admin-table-wrap">
+                        <div class="admin-table-header"><span class="admin-table-title">Latest Users</span></div>
+                        <table class="admin-table" id="dash-users-table">
+                            <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <div class="admin-table-header"><span class="admin-table-title">Latest Places</span></div>
+                        <table class="admin-table" id="dash-places-table">
+                            <thead><tr><th>Title</th><th>Price</th><th>Owner</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users -->
+            <section id="section-users" class="admin-section">
+                <div class="admin-header">
+                    <h1 class="admin-title">Users</h1>
+                    <div class="admin-toolbar">
+                        <input type="text" class="admin-search" id="users-search" placeholder="Search by name or email…" oninput="filterTable('users-table', this.value, [0,1])">
+                        <button class="admin-btn admin-btn--primary" onclick="openCreateUserModal()">+ New User</button>
+                    </div>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table" id="users-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Places -->
+            <section id="section-places" class="admin-section">
+                <div class="admin-header">
+                    <h1 class="admin-title">Places</h1>
+                    <div class="admin-toolbar">
+                        <input type="text" class="admin-search" placeholder="Search by title…" oninput="filterTable('places-table', this.value, [0])">
+                    </div>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table" id="places-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Price</th>
+                                <th>Owner</th>
+                                <th>Location</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="places-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Reviews -->
+            <section id="section-reviews" class="admin-section">
+                <div class="admin-header">
+                    <h1 class="admin-title">Reviews</h1>
+                    <div class="admin-toolbar">
+                        <input type="text" class="admin-search" placeholder="Search by text…" oninput="filterTable('reviews-table', this.value, [0])">
+                    </div>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table" id="reviews-table">
+                        <thead>
+                            <tr>
+                                <th>Text</th>
+                                <th>Rating</th>
+                                <th>Place ID</th>
+                                <th>User ID</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reviews-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Amenities -->
+            <section id="section-amenities" class="admin-section">
+                <div class="admin-header">
+                    <h1 class="admin-title">Amenities</h1>
+                    <div class="admin-toolbar">
+                        <input type="text" class="admin-search" placeholder="Search amenity…" oninput="filterTable('amenities-table', this.value, [0])">
+                        <button class="admin-btn admin-btn--primary" onclick="openAmenityModal()">+ New Amenity</button>
+                    </div>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table" id="amenities-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>ID</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="amenities-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ── MODALS ── -->
+
+    <!-- Create User Modal -->
+    <div id="modal-create-user" class="admin-modal-bg" style="display:none" onclick="closeModalBg(event,'modal-create-user')">
+        <div class="admin-modal" onclick="event.stopPropagation()">
+            <h3>New User</h3>
+            <div class="admin-modal-field"><label>First name</label><input type="text" id="cu-firstname" placeholder="John"></div>
+            <div class="admin-modal-field"><label>Last name</label><input type="text" id="cu-lastname" placeholder="Doe"></div>
+            <div class="admin-modal-field"><label>Email</label><input type="email" id="cu-email" placeholder="john@example.com"></div>
+            <div class="admin-modal-field"><label>Password</label><input type="password" id="cu-password" placeholder="••••••••"></div>
+            <div class="admin-modal-field"><label>Role</label>
+                <select id="cu-is-admin">
+                    <option value="false">User</option>
+                    <option value="true">Admin</option>
+                </select>
+            </div>
+            <div class="admin-modal-actions">
+                <button class="admin-btn admin-btn--ghost" onclick="closeModal('modal-create-user')">Cancel</button>
+                <button class="admin-btn admin-btn--primary" onclick="submitCreateUser()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="modal-edit-user" class="admin-modal-bg" style="display:none" onclick="closeModalBg(event,'modal-edit-user')">
+        <div class="admin-modal" onclick="event.stopPropagation()">
+            <h3>Edit User</h3>
+            <input type="hidden" id="eu-id">
+            <div class="admin-modal-field"><label>First name</label><input type="text" id="eu-firstname"></div>
+            <div class="admin-modal-field"><label>Last name</label><input type="text" id="eu-lastname"></div>
+            <div class="admin-modal-field"><label>Email</label><input type="email" id="eu-email"></div>
+            <div class="admin-modal-field"><label>New password <span style="opacity:.5">(leave blank to keep)</span></label><input type="password" id="eu-password" placeholder="••••••••"></div>
+            <div class="admin-modal-field"><label>Role</label>
+                <select id="eu-is-admin">
+                    <option value="false">User</option>
+                    <option value="true">Admin</option>
+                </select>
+            </div>
+            <div class="admin-modal-actions">
+                <button class="admin-btn admin-btn--ghost" onclick="closeModal('modal-edit-user')">Cancel</button>
+                <button class="admin-btn admin-btn--primary" onclick="submitEditUser()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Place Modal -->
+    <div id="modal-edit-place" class="admin-modal-bg" style="display:none" onclick="closeModalBg(event,'modal-edit-place')">
+        <div class="admin-modal admin-modal--wide" onclick="event.stopPropagation()">
+            <h3>Edit Place</h3>
+            <input type="hidden" id="ep-id">
+            <div class="admin-modal-field"><label>Title</label><input type="text" id="ep-title"></div>
+            <div class="admin-modal-field"><label>Description</label><input type="text" id="ep-description"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+                <div class="admin-modal-field"><label>Price ($/night)</label><input type="number" id="ep-price" min="1" step="0.01"></div>
+                <div class="admin-modal-field"><label>Latitude</label><input type="number" id="ep-latitude" step="any"></div>
+                <div class="admin-modal-field"><label>Longitude</label><input type="number" id="ep-longitude" step="any"></div>
+            </div>
+
+            <!-- Photos -->
+            <div class="admin-modal-field" style="margin-top:.5rem">
+                <label>Photos <span id="ep-photo-count" style="opacity:.5;font-weight:400;text-transform:none;letter-spacing:0">0 / 10</span></label>
+                <div id="ep-photo-grid" class="admin-photo-grid"></div>
+                <label class="admin-photo-add" id="ep-photo-label" for="ep-photos-input">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add photos
+                    <input type="file" id="ep-photos-input" accept="image/*" multiple style="display:none">
+                </label>
+            </div>
+
+            <div class="admin-modal-actions">
+                <button class="admin-btn admin-btn--ghost" onclick="closeModal('modal-edit-place')">Cancel</button>
+                <button class="admin-btn admin-btn--primary" id="ep-save-btn" onclick="submitEditPlace()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Review Modal -->
+    <div id="modal-edit-review" class="admin-modal-bg" style="display:none" onclick="closeModalBg(event,'modal-edit-review')">
+        <div class="admin-modal" onclick="event.stopPropagation()">
+            <h3>Edit Review</h3>
+            <input type="hidden" id="er-id">
+            <div class="admin-modal-field"><label>Text</label><textarea id="er-text" rows="3" style="resize:vertical"></textarea></div>
+            <div class="admin-modal-field"><label>Rating (1–5)</label>
+                <select id="er-rating">
+                    <option value="1">★☆☆☆☆ — 1</option>
+                    <option value="2">★★☆☆☆ — 2</option>
+                    <option value="3">★★★☆☆ — 3</option>
+                    <option value="4">★★★★☆ — 4</option>
+                    <option value="5">★★★★★ — 5</option>
+                </select>
+            </div>
+            <div class="admin-modal-actions">
+                <button class="admin-btn admin-btn--ghost" onclick="closeModal('modal-edit-review')">Cancel</button>
+                <button class="admin-btn admin-btn--primary" onclick="submitEditReview()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Amenity Modal (create/edit) -->
+    <div id="modal-amenity" class="admin-modal-bg" style="display:none" onclick="closeModalBg(event,'modal-amenity')">
+        <div class="admin-modal" onclick="event.stopPropagation()">
+            <h3 id="amenity-modal-title">New Amenity</h3>
+            <input type="hidden" id="am-id">
+            <div class="admin-modal-field"><label>Name</label><input type="text" id="am-name" placeholder="WiFi, Pool, Parking…"></div>
+            <div class="admin-modal-actions">
+                <button class="admin-btn admin-btn--ghost" onclick="closeModal('modal-amenity')">Cancel</button>
+                <button class="admin-btn admin-btn--primary" onclick="submitAmenity()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div id="modal-confirm" class="admin-modal-bg" style="display:none" onclick="closeModalBg(event,'modal-confirm')">
+        <div class="admin-modal" onclick="event.stopPropagation()">
+            <h3>Confirm delete</h3>
+            <p id="confirm-msg" style="color:rgba(248,247,244,0.60); font-size:.9rem; margin-bottom:1.5rem; line-height:1.6;"></p>
+            <div class="admin-modal-actions">
+                <button class="admin-btn admin-btn--ghost" onclick="closeModal('modal-confirm')">Cancel</button>
+                <button class="admin-btn admin-btn--danger" id="confirm-ok-btn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+    <script src="scripts.js"></script>
+    <script>
+    /* ── ADMIN GUARD ── */
+    (function () {
+        const allCookies = document.cookie.split(';');
+        let token = '';
+        for (const c of allCookies) {
+            const trimmed = c.trim();
+            const eq = trimmed.indexOf('=');
+            if (eq !== -1 && trimmed.substring(0, eq) === 'token') {
+                token = trimmed.substring(eq + 1);
+                break;
+            }
+        }
+        if (!token) { window.location.href = 'login.html'; return; }
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (!payload.is_admin) { window.location.href = 'index.html'; }
+        } catch { window.location.href = 'login.html'; }
+    })();
+
+    const API = 'http://127.0.0.1:5000/api/v1';
+
+    function authHeaders() {
+        const token = getCookie('token');
+        return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+    }
+
+    /* ── SECTION NAV ── */
+    function showSection(name, btn) {
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
+        document.getElementById('section-' + name).classList.add('active');
+        if (btn) btn.classList.add('active');
+        loaders[name] && loaders[name]();
+    }
+
+    /* ── MODALS ── */
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function openModal(id)  { document.getElementById(id).style.display = 'flex'; }
+    function closeModalBg(e, id) { if (e.target === e.currentTarget) closeModal(id); }
+
+    function confirmDelete(message, onConfirm) {
+        document.getElementById('confirm-msg').textContent = message;
+        const btn = document.getElementById('confirm-ok-btn');
+        const fresh = btn.cloneNode(true);
+        btn.parentNode.replaceChild(fresh, btn);
+        fresh.addEventListener('click', () => { closeModal('modal-confirm'); onConfirm(); });
+        openModal('modal-confirm');
+    }
+
+    /* ── GENERIC TABLE FILTER ── */
+    function filterTable(tableId, query, colIndexes) {
+        const q = query.toLowerCase();
+        document.querySelectorAll(`#${tableId} tbody tr`).forEach(tr => {
+            const text = colIndexes.map(i => (tr.cells[i]?.textContent || '').toLowerCase()).join(' ');
+            tr.style.display = text.includes(q) ? '' : 'none';
+        });
+    }
+
+    /* ── DASHBOARD ── */
+    async function loadDashboard() {
+        const [usersRes, placesRes, reviewsRes, amenitiesRes] = await Promise.all([
+            fetch(`${API}/users/`),
+            fetch(`${API}/places/`),
+            fetch(`${API}/reviews/`),
+            fetch(`${API}/amenities/`),
+        ]);
+        const users     = usersRes.ok     ? await usersRes.json()     : [];
+        const places    = placesRes.ok    ? await placesRes.json()    : [];
+        const reviews   = reviewsRes.ok   ? await reviewsRes.json()   : [];
+        const amenities = amenitiesRes.ok ? await amenitiesRes.json() : [];
+
+        document.getElementById('stat-users').textContent     = users.length;
+        document.getElementById('stat-places').textContent    = places.length;
+        document.getElementById('stat-reviews').textContent   = reviews.length;
+        document.getElementById('stat-amenities').textContent = amenities.length;
+
+        const userMap = {};
+        users.forEach(u => userMap[u.id] = `${u.first_name} ${u.last_name}`);
+
+        const duTbody = document.querySelector('#dash-users-table tbody');
+        duTbody.innerHTML = users.slice(0, 8).map(u => `
+            <tr>
+                <td>${u.first_name} ${u.last_name}</td>
+                <td style="color:rgba(248,247,244,0.55)">${u.email}</td>
+                <td></td>
+            </tr>`).join('');
+
+        const dpTbody = document.querySelector('#dash-places-table tbody');
+        dpTbody.innerHTML = places.slice(0, 8).map(p => `
+            <tr>
+                <td>${p.title}</td>
+                <td style="color:#9BC4BC">$${p.price}</td>
+                <td style="color:rgba(248,247,244,0.55)">${userMap[p.owner?.id] || p.owner?.email || '—'}</td>
+            </tr>`).join('');
+    }
+
+    /* ── USERS ── */
+    let _users = [];
+    async function loadUsers() {
+        const res = await fetch(`${API}/users/`, { headers: authHeaders() });
+        _users = res.ok ? await res.json() : [];
+        renderUsers();
+    }
+
+    function renderUsers() {
+        const tbody = document.getElementById('users-tbody');
+        if (!_users.length) { tbody.innerHTML = `<tr><td colspan="4" class="admin-empty">No users found.</td></tr>`; return; }
+        tbody.innerHTML = _users.map(u => `
+            <tr>
+                <td>${u.first_name} ${u.last_name}</td>
+                <td style="color:rgba(248,247,244,0.55)">${u.email}</td>
+                <td><span class="admin-pill ${u.is_admin ? 'admin-pill--admin' : 'admin-pill--user'}">${u.is_admin ? 'Admin' : 'User'}</span></td>
+                <td>
+                    <div class="admin-actions">
+                        <button class="admin-btn admin-btn--ghost" onclick="openEditUserModal('${u.id}')">Edit</button>
+                        <button class="admin-btn admin-btn--danger" onclick="deleteUser('${u.id}', '${u.first_name} ${u.last_name}')">Delete</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+    }
+
+    function openCreateUserModal() { openModal('modal-create-user'); }
+
+    async function submitCreateUser() {
+        const body = {
+            first_name: document.getElementById('cu-firstname').value.trim(),
+            last_name:  document.getElementById('cu-lastname').value.trim(),
+            email:      document.getElementById('cu-email').value.trim(),
+            password:   document.getElementById('cu-password').value,
+        };
+        if (!body.first_name || !body.last_name || !body.email || !body.password) { showToast('All fields are required.', 'error'); return; }
+        const res = await fetch(`${API}/users/`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(body) });
+        if (res.ok) {
+            const data = await res.json();
+            // if admin role requested, update immediately
+            const isAdm = document.getElementById('cu-is-admin').value === 'true';
+            if (isAdm) {
+                await fetch(`${API}/users/${data.id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ is_admin: true }) });
+            }
+            closeModal('modal-create-user');
+            showToast('User created.', 'success');
+            loadUsers();
+        } else {
+            const err = await res.json();
+            showToast(err.error || 'Could not create user.', 'error');
+        }
+    }
+
+    function openEditUserModal(userId) {
+        const u = _users.find(x => x.id === userId);
+        if (!u) return;
+        document.getElementById('eu-id').value       = u.id;
+        document.getElementById('eu-firstname').value = u.first_name;
+        document.getElementById('eu-lastname').value  = u.last_name;
+        document.getElementById('eu-email').value     = u.email;
+        document.getElementById('eu-password').value  = '';
+        document.getElementById('eu-is-admin').value  = u.is_admin ? 'true' : 'false';
+        openModal('modal-edit-user');
+    }
+
+    async function submitEditUser() {
+        const id  = document.getElementById('eu-id').value;
+        const body = {
+            first_name: document.getElementById('eu-firstname').value.trim(),
+            last_name:  document.getElementById('eu-lastname').value.trim(),
+            email:      document.getElementById('eu-email').value.trim(),
+            is_admin:   document.getElementById('eu-is-admin').value === 'true',
+        };
+        const pw = document.getElementById('eu-password').value;
+        if (pw) body.password = pw;
+
+        const res = await fetch(`${API}/users/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(body) });
+        if (res.ok) {
+            closeModal('modal-edit-user');
+            showToast('User updated.', 'success');
+            loadUsers();
+        } else {
+            const err = await res.json();
+            showToast(err.error || 'Could not update user.', 'error');
+        }
+    }
+
+    function deleteUser(id, name) {
+        confirmDelete(`Delete user "${name}"? This action cannot be undone.`, async () => {
+            const res = await fetch(`${API}/users/${id}`, { method: 'DELETE', headers: authHeaders() });
+            if (res.ok) { showToast('User deleted.', 'success'); loadUsers(); loadDashboard(); }
+            else { const e = await res.json(); showToast(e.error || 'Could not delete user.', 'error'); }
+        });
+    }
+
+    /* ── PLACES ── */
+    let _places = [];
+    async function loadPlaces() {
+        const res = await fetch(`${API}/places/`, { headers: authHeaders() });
+        _places = res.ok ? await res.json() : [];
+        renderPlaces();
+    }
+
+    function renderPlaces() {
+        const tbody = document.getElementById('places-tbody');
+        if (!_places.length) { tbody.innerHTML = `<tr><td colspan="5" class="admin-empty">No places found.</td></tr>`; return; }
+        tbody.innerHTML = _places.map(p => `
+            <tr>
+                <td><a href="place.html?id=${p.id}" style="color:#9BC4BC;text-decoration:none" target="_blank">${p.title}</a></td>
+                <td style="color:#9BC4BC">$${p.price}</td>
+                <td style="color:rgba(248,247,244,0.55)">${p.owner ? `${p.owner.first_name} ${p.owner.last_name}` : '—'}</td>
+                <td style="color:rgba(248,247,244,0.40)">${p.latitude?.toFixed(4) || '—'}, ${p.longitude?.toFixed(4) || '—'}</td>
+                <td>
+                    <div class="admin-actions">
+                        <button class="admin-btn admin-btn--ghost" onclick="openEditPlaceModal('${p.id}')">Edit</button>
+                        <button class="admin-btn admin-btn--danger" onclick="deletePlace('${p.id}', '${p.title.replace(/'/g,"\\'")}')">Delete</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+    }
+
+    let _epSaved   = [];   // existing photo URLs
+    let _epPending = [];   // new File objects
+
+    function _epRender() {
+        const grid    = document.getElementById('ep-photo-grid');
+        const count   = document.getElementById('ep-photo-count');
+        const label   = document.getElementById('ep-photo-label');
+        const total   = _epSaved.length + _epPending.length;
+        count.textContent = `${total} / 10`;
+        label.style.display = total >= 10 ? 'none' : '';
+        grid.innerHTML = '';
+
+        _epSaved.forEach((url, i) => {
+            const d = document.createElement('div');
+            d.className = 'admin-photo-item';
+            d.innerHTML = `<img src="${url}" alt="photo"><button type="button" class="admin-photo-rm" onclick="_epRemoveSaved(${i})">&#x2715;</button>`;
+            grid.appendChild(d);
+        });
+        _epPending.forEach((file, i) => {
+            const d = document.createElement('div');
+            d.className = 'admin-photo-item admin-photo-item--new';
+            d.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="new photo"><button type="button" class="admin-photo-rm" onclick="_epRemovePending(${i})">&#x2715;</button>`;
+            grid.appendChild(d);
+        });
+    }
+
+    window._epRemoveSaved   = i => { _epSaved.splice(i, 1);   _epRender(); };
+    window._epRemovePending = i => { _epPending.splice(i, 1); _epRender(); };
+
+    function openEditPlaceModal(id) {
+        const p = _places.find(x => x.id === id);
+        if (!p) return;
+        document.getElementById('ep-id').value          = p.id;
+        document.getElementById('ep-title').value       = p.title;
+        document.getElementById('ep-description').value = p.description || '';
+        document.getElementById('ep-price').value       = p.price;
+        document.getElementById('ep-latitude').value    = p.latitude;
+        document.getElementById('ep-longitude').value   = p.longitude;
+
+        _epSaved   = [];
+        _epPending = [];
+        try { _epSaved = p.photos ? JSON.parse(p.photos) : []; } catch {}
+        _epRender();
+
+        // wire file input (replace to avoid duplicate listeners)
+        const inp = document.getElementById('ep-photos-input');
+        const fresh = inp.cloneNode(true);
+        inp.parentNode.replaceChild(fresh, inp);
+        fresh.addEventListener('change', e => {
+            const slots    = 10 - _epSaved.length - _epPending.length;
+            const incoming = Array.from(e.target.files).slice(0, slots);
+            if (e.target.files.length > slots)
+                showToast(`Only ${slots} slot(s) left (10 max).`, 'error');
+            _epPending.push(...incoming);
+            e.target.value = '';
+            _epRender();
+        });
+
+        openModal('modal-edit-place');
+    }
+
+    async function submitEditPlace() {
+        const id  = document.getElementById('ep-id').value;
+        const btn = document.getElementById('ep-save-btn');
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+
+        const reset = () => { btn.disabled = false; btn.textContent = 'Save'; };
+
+        let photos = [..._epSaved];
+
+        if (_epPending.length > 0) {
+            try {
+                const fd = new FormData();
+                _epPending.forEach(f => fd.append('photos[]', f));
+                const token = getCookie('token');
+                const up = await fetch('http://127.0.0.1:5000/api/v1/upload', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: fd
+                });
+                if (!up.ok) {
+                    let msg = 'Photo upload failed.';
+                    try { const e = await up.json(); msg = e.error || msg; } catch {}
+                    showToast(`Upload error (${up.status}): ${msg}`, 'error');
+                    reset(); return;
+                }
+                const upData = await up.json();
+                photos = [...photos, ...upData.photo_urls];
+            } catch (err) {
+                showToast(`Upload error: ${err.message}`, 'error');
+                reset(); return;
+            }
+        }
+
+        const body = {
+            title:       document.getElementById('ep-title').value.trim(),
+            description: document.getElementById('ep-description').value.trim(),
+            price:       parseFloat(document.getElementById('ep-price').value),
+            latitude:    parseFloat(document.getElementById('ep-latitude').value),
+            longitude:   parseFloat(document.getElementById('ep-longitude').value),
+            photos:      JSON.stringify(photos),
+        };
+
+        if (!body.title || isNaN(body.price)) { showToast('Title and price are required.', 'error'); reset(); return; }
+
+        try {
+            const res = await fetch(`${API}/places/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(body) });
+            if (res.ok) { closeModal('modal-edit-place'); showToast('Place updated.', 'success'); loadPlaces(); }
+            else { const e = await res.json(); showToast(e.error || 'Could not update place.', 'error'); }
+        } catch (err) {
+            showToast(`Save error: ${err.message}`, 'error');
+        }
+        reset();
+    }
+
+    function deletePlace(id, title) {
+        confirmDelete(`Delete place "${title}"? All associated reviews will also be removed.`, async () => {
+            const res = await fetch(`${API}/places/${id}`, { method: 'DELETE', headers: authHeaders() });
+            if (res.ok) { showToast('Place deleted.', 'success'); loadPlaces(); loadDashboard(); }
+            else { const e = await res.json(); showToast(e.error || 'Could not delete place.', 'error'); }
+        });
+    }
+
+    /* ── REVIEWS ── */
+    let _reviews = [];
+    async function loadReviews() {
+        const res = await fetch(`${API}/reviews/`, { headers: authHeaders() });
+        _reviews = res.ok ? await res.json() : [];
+        renderReviewsAdmin();
+    }
+
+    function renderReviewsAdmin() {
+        const tbody = document.getElementById('reviews-tbody');
+        if (!_reviews.length) { tbody.innerHTML = `<tr><td colspan="5" class="admin-empty">No reviews found.</td></tr>`; return; }
+        const stars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
+        tbody.innerHTML = _reviews.map(r => `
+            <tr>
+                <td title="${r.text}">${r.text.length > 60 ? r.text.slice(0,60)+'…' : r.text}</td>
+                <td style="color:#9BC4BC;letter-spacing:.05em">${stars(r.rating)}</td>
+                <td style="color:rgba(248,247,244,0.40);font-size:.75rem">${r.place_id?.slice(0,8)}…</td>
+                <td style="color:rgba(248,247,244,0.40);font-size:.75rem">${r.user_id?.slice(0,8)}…</td>
+                <td>
+                    <div class="admin-actions">
+                        <button class="admin-btn admin-btn--ghost" onclick="openEditReviewModal('${r.id}')">Edit</button>
+                        <button class="admin-btn admin-btn--danger" onclick="deleteReviewAdmin('${r.id}')">Delete</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+    }
+
+    function openEditReviewModal(id) {
+        const r = _reviews.find(x => x.id === id);
+        if (!r) return;
+        document.getElementById('er-id').value     = r.id;
+        document.getElementById('er-text').value   = r.text;
+        document.getElementById('er-rating').value = String(r.rating);
+        openModal('modal-edit-review');
+    }
+
+    async function submitEditReview() {
+        const id   = document.getElementById('er-id').value;
+        const body = {
+            text:   document.getElementById('er-text').value.trim(),
+            rating: parseInt(document.getElementById('er-rating').value),
+        };
+        if (!body.text) { showToast('Text is required.', 'error'); return; }
+        const res = await fetch(`${API}/reviews/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(body) });
+        if (res.ok) { closeModal('modal-edit-review'); showToast('Review updated.', 'success'); loadReviews(); }
+        else { const e = await res.json(); showToast(e.error || 'Could not update review.', 'error'); }
+    }
+
+    function deleteReviewAdmin(id) {
+        confirmDelete('Delete this review? This cannot be undone.', async () => {
+            const res = await fetch(`${API}/reviews/${id}`, { method: 'DELETE', headers: authHeaders() });
+            if (res.ok) { showToast('Review deleted.', 'success'); loadReviews(); loadDashboard(); }
+            else { const e = await res.json(); showToast(e.error || 'Could not delete review.', 'error'); }
+        });
+    }
+
+    /* ── AMENITIES ── */
+    let _amenities = [];
+    async function loadAmenities() {
+        const res = await fetch(`${API}/amenities/`);
+        _amenities = res.ok ? await res.json() : [];
+        renderAmenities();
+    }
+
+    function renderAmenities() {
+        const tbody = document.getElementById('amenities-tbody');
+        if (!_amenities.length) { tbody.innerHTML = `<tr><td colspan="3" class="admin-empty">No amenities found.</td></tr>`; return; }
+        tbody.innerHTML = _amenities.map(a => `
+            <tr>
+                <td>${a.name}</td>
+                <td style="color:rgba(248,247,244,0.35);font-size:.75rem">${a.id}</td>
+                <td>
+                    <div class="admin-actions">
+                        <button class="admin-btn admin-btn--ghost" onclick="openAmenityModal('${a.id}', '${a.name.replace(/'/g,"\\'")}')">Edit</button>
+                        <button class="admin-btn admin-btn--danger" onclick="deleteAmenityAdmin('${a.id}', '${a.name.replace(/'/g,"\\'")}')">Delete</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+    }
+
+    function openAmenityModal(id, name) {
+        document.getElementById('am-id').value = id || '';
+        document.getElementById('am-name').value = name || '';
+        document.getElementById('amenity-modal-title').textContent = id ? 'Edit Amenity' : 'New Amenity';
+        openModal('modal-amenity');
+    }
+
+    async function submitAmenity() {
+        const id   = document.getElementById('am-id').value;
+        const name = document.getElementById('am-name').value.trim();
+        if (!name) { showToast('Name is required.', 'error'); return; }
+        const url    = id ? `${API}/amenities/${id}` : `${API}/amenities/`;
+        const method = id ? 'PUT' : 'POST';
+        const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify({ name }) });
+        if (res.ok) {
+            closeModal('modal-amenity');
+            showToast(id ? 'Amenity updated.' : 'Amenity created.', 'success');
+            loadAmenities(); loadDashboard();
+        } else {
+            const e = await res.json();
+            showToast(e.error || 'Could not save amenity.', 'error');
+        }
+    }
+
+    function deleteAmenityAdmin(id, name) {
+        confirmDelete(`Delete amenity "${name}"?`, async () => {
+            const res = await fetch(`${API}/amenities/${id}`, { method: 'DELETE', headers: authHeaders() });
+            if (res.ok) { showToast('Amenity deleted.', 'success'); loadAmenities(); loadDashboard(); }
+            else { const e = await res.json(); showToast(e.error || 'Could not delete amenity.', 'error'); }
+        });
+    }
+
+    /* ── LOADERS MAP ── */
+    const loaders = {
+        dashboard: loadDashboard,
+        users:     loadUsers,
+        places:    loadPlaces,
+        reviews:   loadReviews,
+        amenities: loadAmenities,
+    };
+
+    /* ── INIT ── */
+    document.addEventListener('DOMContentLoaded', () => {
+        loadDashboard();
+    });
+    </script>
+</body>
+</html>
