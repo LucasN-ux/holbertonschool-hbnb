@@ -38,36 +38,6 @@
     --text-muted:      rgba(9,9,9,0.40);
     --text-dim:        rgba(9,9,9,0.20);
 
-    /* Accent aliases — remapped to sage palette */
-    --red:             #9BC4BC;
-    --red-deep:        #6FA89F;
-    --red-glow:        rgba(155,196,188,0.25);
-    --red-dim:         rgba(155,196,188,0.10);
-    --red-subtle:      rgba(155,196,188,0.06);
-
-    /* Legacy aliases */
-    --ink:             #090909;
-    --ink-soft:        rgba(9,9,9,0.70);
-    --ink-muted:       rgba(9,9,9,0.40);
-    --canvas:          #F8F7F4;
-    --line:            rgba(75,80,67,0.12);
-    --line-strong:     rgba(75,80,67,0.22);
-    --night:           #F8F7F4;
-    --night-2:         #EFF0EB;
-    --night-3:         #E3E4DE;
-    --primary:         var(--sage);
-    --primary-hover:   var(--sage-deep);
-    --primary-light:   var(--sage-light);
-    --primary-ultra:   var(--sage-subtle);
-    --dark:            #090909;
-    --dark-mid:        #2A2A2A;
-    --gray:            rgba(9,9,9,0.40);
-    --gray-mid:        rgba(9,9,9,0.25);
-    --light-gray:      rgba(75,80,67,0.08);
-    --lighter-gray:    rgba(75,80,67,0.04);
-    --white:           #FFFFFF;
-    --teal:            #9BC4BC;
-    --teal-light:      rgba(155,196,188,0.12);
 
     /* Shadows — softer on light */
     --sh-xs:  0 1px 4px rgba(0,0,0,0.06);
@@ -75,16 +45,8 @@
     --sh-md:  0 8px 32px rgba(0,0,0,0.11);
     --sh-lg:  0 20px 60px rgba(0,0,0,0.13);
     --sh-xl:  0 40px 100px rgba(0,0,0,0.16);
-    --shadow-xs:   var(--sh-xs);
-    --shadow-sm:   var(--sh-sm);
-    --shadow:      var(--sh-sm);
-    --shadow-md:   var(--sh-md);
-    --shadow-lg:   var(--sh-lg);
-    --shadow-xl:   var(--sh-xl);
-
     /* Radii */
     --r-xs:   4px; --r-sm: 8px; --r: 12px; --r-lg: 16px; --r-pill: 9999px;
-    --radius: var(--r); --radius-sm: var(--r-sm); --radius-xs: var(--r-xs);
 
     /* Typography */
     --font:         'Space Grotesk', 'Inter', 'Helvetica Neue', system-ui, sans-serif;
@@ -247,7 +209,7 @@ header.scrolled .logo-nav {
 
 /* ── NAV BUTTONS ── */
 /* Sur fond transparent (hero photo sombre) : blanc */
-#login-link, #register-link, .btn-outline {
+#login-link, .btn-outline {
     padding: .42rem 1rem;
     border-radius: var(--r-xs);
     font-size: .8125rem; font-weight: 600; cursor: pointer;
@@ -260,7 +222,7 @@ header.scrolled .logo-nav {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
 }
-#login-link:hover, #register-link:hover, .btn-outline:hover {
+#login-link:hover, .btn-outline:hover {
     background: rgba(255,255,255,0.20);
     border-color: rgba(255,255,255,0.70);
     color: #fff;
@@ -268,10 +230,8 @@ header.scrolled .logo-nav {
 
 /* Sur fond clair (header visible) : palette olive/sage */
 header.header--visible #login-link,
-header.header--visible #register-link,
 header.header--visible .btn-outline,
 header.scrolled #login-link,
-header.scrolled #register-link,
 header.scrolled .btn-outline {
     border-color: var(--border-hover);
     background: transparent;
@@ -280,10 +240,8 @@ header.scrolled .btn-outline {
     -webkit-backdrop-filter: none;
 }
 header.header--visible #login-link:hover,
-header.header--visible #register-link:hover,
 header.header--visible .btn-outline:hover,
 header.scrolled #login-link:hover,
-header.scrolled #register-link:hover,
 header.scrolled .btn-outline:hover {
     background: var(--surface-hover);
     border-color: var(--border-strong);
@@ -462,11 +420,6 @@ header.scrolled button[onclick="logout()"]:hover {
 .s-explore__heading em { color: #9BC4BC; font-style: normal; }
 .section-heading::before { background: #4B5043; }
 .s-features__title em { font-style: normal; color: #9BC4BC; -webkit-text-fill-color: #9BC4BC; }
-.s-hero__title em {
-    background: linear-gradient(125deg, #9BC4BC 0%, #6FA89F 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-
 /* ── 6. FEATURES SECTION ────────────────────────────────────── */
 .s-features {
     background: #4B5043;
@@ -504,7 +457,6 @@ header.scrolled button[onclick="logout()"]:hover {
     letter-spacing: -0.04em; margin-bottom: 1.5rem; line-height: 1;
     opacity: 0.75; display: block;
 }
-.s-feature__line { display: none; }
 .s-feature h3 {
     font-family: var(--font-ui);
     font-size: 1.125rem; font-weight: 700; color: #FFFFFF;
@@ -881,13 +833,6 @@ main:not(.s-explore) {
     margin-bottom: .3rem;
 }
 
-/* Ligne d'info sous le titre (host, amenities, etc.) */
-.place-card-meta {
-    font-size: .75rem;
-    color: rgba(248,247,244,0.40);
-    font-weight: 500;
-    letter-spacing: .02em;
-}
 
 /* ── 13. SKELETON ───────────────────────────────────────────── */
 .skeleton { background: #111111; border-radius: var(--r-lg); overflow: hidden; border: 1px solid rgba(155,196,188,0.10); }
@@ -1140,7 +1085,7 @@ form p a:hover { color: var(--text-primary); }
 .my-place-info .price span { font-weight: 400; color: var(--text-muted); }
 .my-place-info .description {
     font-size: .8125rem; color: var(--text-secondary); margin-top: .25rem;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .my-place-actions { display: flex; flex-direction: column; gap: .5rem; padding: 1rem; min-width: 100px; }
 .my-place-actions .btn-outline {
@@ -1158,35 +1103,6 @@ form p a:hover { color: var(--text-primary); }
 .my-place-actions .btn-save { text-align: center; font-size: .8125rem; }
 .empty-state.my-places { grid-column: unset; }
 
-/* ── BACK HOME ARROW ── */
-.back-home-arrow {
-    position: fixed;
-    top: calc(var(--header-h) + .75rem);
-    left: 1.25rem;
-    z-index: 990;
-    display: flex;
-    align-items: center;
-    gap: .4rem;
-    padding: .4rem .875rem .4rem .65rem;
-    background: rgba(255,255,255,0.88);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--border);
-    border-radius: var(--r-pill);
-    color: var(--text-secondary);
-    font-size: .8125rem;
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: all var(--t);
-}
-.back-home-arrow:hover {
-    background: var(--surface-hover);
-    border-color: var(--border-hover);
-    color: var(--text-primary);
-    transform: translateX(-2px);
-}
-.back-home-arrow svg { flex-shrink: 0; }
 
 /* ── 22. ADD / EDIT PLACE ───────────────────────────────────── */
 .add-place-page { max-width: 780px; margin: 0 auto; }
@@ -1540,7 +1456,7 @@ header.scrolled .nav-hamburger { color: var(--text-secondary); }
 
     /* Touch targets — min 44px height */
     .btn-outline, .btn-primary, button[onclick="logout()"],
-    .header-home, #login-link, #register-link {
+    .header-home, #login-link {
         min-height: 44px;
         display: inline-flex;
         align-items: center;
