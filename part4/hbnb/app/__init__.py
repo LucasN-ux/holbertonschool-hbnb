@@ -50,6 +50,7 @@ def create_app(config_name='development'):
     from app.api.v1.places import api as places_ns
     from app.api.v1.reviews import api as reviews_ns
     from app.api.v1.auth import api as auth_ns
+    from app.api.v1.reservations import api as reservations_ns
     from app.api.v1.upload import upload_bp
 
     api.add_namespace(users_ns, path='/api/v1/users')
@@ -57,6 +58,7 @@ def create_app(config_name='development'):
     api.add_namespace(places_ns, path='/api/v1/places')
     api.add_namespace(reviews_ns, path='/api/v1/reviews')
     api.add_namespace(auth_ns, path='/api/v1/auth')
+    api.add_namespace(reservations_ns, path='/api/v1/reservations')
     app.register_blueprint(upload_bp)
 
     upload_folder = os.path.join(app.root_path, '..', 'base_files', 'uploads')

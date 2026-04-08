@@ -228,20 +228,31 @@ function checkAuthentication() {
         const payload = getTokenPayload(token);
         const isAdmin = payload && payload.is_admin;
 
+        const firstName = (payload && payload.first_name) ? payload.first_name : '';
+        const userLabel = firstName
+            ? `<span class="nav-user-badge" aria-label="Logged in as ${firstName}"><span class="nav-avatar" aria-hidden="true">${firstName[0].toUpperCase()}</span>${firstName}</span>`
+            : '';
+
         if (loginLink) {
             loginLink.outerHTML = isAdmin
-                ? `<a href="admin.html" class="btn-outline">Control Room</a>
+                ? `${userLabel}
+                   <a href="admin.html" class="btn-outline">Control Room</a>
                    <button class="btn-primary" onclick="logout()" aria-label="Logout from account">Logout</button>`
-                : `<a href="my_places.html" class="btn-outline">My Stations</a>
+                : `${userLabel}
+                   <a href="my_places.html" class="btn-outline">My Stations</a>
+                   <a href="my_reservations.html" class="btn-outline">My Reservations</a>
                    <a href="profile.html" class="btn-outline">My Profile</a>
                    <button class="btn-primary" onclick="logout()" aria-label="Logout from account">Logout</button>`;
         }
 
         if (mobileLinks) {
             mobileLinks.innerHTML = isAdmin
-                ? `<a href="admin.html">Control Room</a>
+                ? `${firstName ? `<span class="mobile-user-name">👤 ${firstName}</span>` : ''}
+                   <a href="admin.html">Control Room</a>
                    <a href="#" onclick="logout();return false;">Logout</a>`
-                : `<a href="my_places.html">My Stations</a>
+                : `${firstName ? `<span class="mobile-user-name">👤 ${firstName}</span>` : ''}
+                   <a href="my_places.html">My Stations</a>
+                   <a href="my_reservations.html">My Reservations</a>
                    <a href="profile.html">My Profile</a>
                    <a href="#" onclick="logout();return false;">Logout</a>`;
         }
@@ -425,10 +436,32 @@ async function initPlaceDetails() {
 
     const payload = token ? getTokenPayload(token) : null;
     const isOwner = payload && payload.sub === place.owner.id;
-    const reviewBtnHTML = (token && !isOwner)
+    const isLoggedIn = !!token;
+
+    const reviewBtnHTML = (isLoggedIn && !isOwner)
         ? `<hr class="booking-divider">
            <a href="add_review.html?id=${place.id}" class="btn-review">File Mission Log</a>`
         : '';
+
+    // Reservation section — only for logged-in non-owners
+    const today = new Date().toISOString().split('T')[0];
+    const reservationHTML = (isLoggedIn && !isOwner)
+        ? `<hr class="booking-divider">
+           <div class="booking-reservation" id="booking-reservation">
+               <h3 class="booking-res-title">Reserve this habitat</h3>
+               <div class="booking-dates">
+                   <label for="res-checkin">Check-in</label>
+                   <input type="date" id="res-checkin" min="${today}" aria-label="Check-in date">
+                   <label for="res-checkout">Check-out</label>
+                   <input type="date" id="res-checkout" min="${today}" aria-label="Check-out date">
+               </div>
+               <div class="booking-total" id="booking-total" aria-live="polite"></div>
+               <button class="btn-reserve" id="btn-reserve" disabled>Select dates to reserve</button>
+           </div>`
+        : (!isLoggedIn
+            ? `<hr class="booking-divider">
+               <a href="login.html" class="btn-reserve" style="text-align:center;">Log in to reserve</a>`
+            : '');
 
     container.innerHTML = `
         <div class="place-layout">
@@ -457,11 +490,87 @@ async function initPlaceDetails() {
                 <div class="booking-card" id="booking-card">
                     <div class="booking-price">$${place.price} <span>/ cycle</span></div>
                     <p class="booking-meta">Kept by ${place.owner.first_name} ${place.owner.last_name}</p>
+                    ${reservationHTML}
                     ${reviewBtnHTML}
                 </div>
             </aside>
         </div>
     `;
+
+    // Wire up date pickers if they exist
+    if (isLoggedIn && !isOwner) {
+        const checkin  = document.getElementById('res-checkin');
+        const checkout = document.getElementById('res-checkout');
+        const totalEl  = document.getElementById('booking-total');
+        const reserveBtn = document.getElementById('btn-reserve');
+
+        function updateTotal() {
+            const inVal  = checkin.value;
+            const outVal = checkout.value;
+            if (!inVal || !outVal) {
+                totalEl.textContent = '';
+                reserveBtn.disabled = true;
+                reserveBtn.textContent = 'Select dates to reserve';
+                return;
+            }
+            const inDate  = new Date(inVal);
+            const outDate = new Date(outVal);
+            if (outDate <= inDate) {
+                totalEl.textContent = 'Check-out must be after check-in';
+                totalEl.className = 'booking-total error';
+                reserveBtn.disabled = true;
+                reserveBtn.textContent = 'Invalid dates';
+                return;
+            }
+            const nights = Math.round((outDate - inDate) / 86400000);
+            const total  = (nights * parseFloat(place.price)).toFixed(2);
+            totalEl.innerHTML = `<strong>${nights} night${nights > 1 ? 's' : ''}</strong> — $${total} total`;
+            totalEl.className = 'booking-total';
+            reserveBtn.disabled = false;
+            reserveBtn.textContent = `Reserve — $${total}`;
+        }
+
+        checkin.addEventListener('change', () => {
+            if (checkout.value && checkout.value <= checkin.value) {
+                checkout.value = '';
+            }
+            checkout.min = checkin.value || today;
+            updateTotal();
+        });
+        checkout.addEventListener('change', updateTotal);
+
+        reserveBtn.addEventListener('click', async () => {
+            if (!checkin.value || !checkout.value) return;
+            reserveBtn.disabled = true;
+            reserveBtn.textContent = 'Initiating…';
+
+            const res = await fetch('http://127.0.0.1:5000/api/v1/reservations/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    place_id:  place.id,
+                    check_in:  checkin.value,
+                    check_out: checkout.value
+                })
+            });
+
+            if (res.ok) {
+                showToast('Reservation request transmitted! Awaiting keeper confirmation.', 'success', 5000);
+                checkin.value  = '';
+                checkout.value = '';
+                totalEl.textContent = '';
+                reserveBtn.textContent = 'Select dates to reserve';
+            } else {
+                const err = await res.json();
+                showToast(err.error || 'Reservation failed. Please retry.', 'error');
+                reserveBtn.disabled = false;
+                reserveBtn.textContent = `Reserve`;
+            }
+        });
+    }
 }
 
 /* ── REVIEWS ── */
@@ -1107,6 +1216,206 @@ async function initEditPlaceForm() {
     });
 }
 
+/* ── MY RESERVATIONS ── */
+function switchTab(tab) {
+    const pMine     = document.getElementById('panel-mine');
+    const pIncoming = document.getElementById('panel-incoming');
+    const tMine     = document.getElementById('tab-mine');
+    const tIncoming = document.getElementById('tab-incoming');
+    if (!pMine || !pIncoming) return;
+
+    if (tab === 'mine') {
+        pMine.hidden = false;     pIncoming.hidden = true;
+        tMine.classList.add('active');    tMine.setAttribute('aria-selected', 'true');
+        tIncoming.classList.remove('active'); tIncoming.setAttribute('aria-selected', 'false');
+    } else {
+        pIncoming.hidden = false; pMine.hidden = true;
+        tIncoming.classList.add('active'); tIncoming.setAttribute('aria-selected', 'true');
+        tMine.classList.remove('active'); tMine.setAttribute('aria-selected', 'false');
+    }
+}
+
+function statusBadge(status) {
+    const map = { pending: 'badge-pending', confirmed: 'badge-confirmed', cancelled: 'badge-cancelled' };
+    const label = { pending: 'Pending', confirmed: 'Confirmed', cancelled: 'Cancelled' };
+    return `<span class="res-status-badge ${map[status] || ''}">${label[status] || status}</span>`;
+}
+
+async function initMyReservations() {
+    const listMine     = document.getElementById('my-reservations-list');
+    const listIncoming = document.getElementById('incoming-reservations-list');
+    if (!listMine && !listIncoming) return;
+
+    const token = protectPage();
+
+    // ── My bookings (as guest) ──
+    if (listMine) {
+        try {
+            const res = await fetch('http://127.0.0.1:5000/api/v1/reservations/mine', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            listMine.setAttribute('aria-busy', 'false');
+
+            if (!res.ok) throw new Error();
+            const reservations = await res.json();
+
+            if (reservations.length === 0) {
+                listMine.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🛸</div>
+                        <p>No bookings yet. Explore habitats across the galaxy.</p>
+                        <a href="index.html" class="btn-save" style="display:inline-block;width:auto;padding:0.75rem 1.5rem;">Explore habitats</a>
+                    </div>`;
+            } else {
+                listMine.innerHTML = '';
+                reservations.forEach(r => {
+                    const card = document.createElement('article');
+                    card.className = 'res-card';
+                    const canCancel = r.status === 'pending' || r.status === 'confirmed';
+                    card.innerHTML = `
+                        <div class="res-card-body">
+                            <div class="res-card-title">
+                                <a href="place.html?id=${r.place_id}">${r.place_title || 'Unknown habitat'}</a>
+                                ${statusBadge(r.status)}
+                            </div>
+                            <div class="res-card-dates">
+                                <span>🚀 ${r.check_in}</span>
+                                <span class="res-arrow">→</span>
+                                <span>🛬 ${r.check_out}</span>
+                            </div>
+                            <div class="res-card-price">$${r.total_price} total</div>
+                        </div>
+                        ${canCancel ? `<button class="btn-cancel-res" onclick="cancelReservation('${r.id}', this)">Cancel</button>` : ''}
+                    `;
+                    listMine.appendChild(card);
+                });
+            }
+        } catch {
+            listMine.innerHTML = '<p class="loading-text">Unable to load your bookings. Signal lost.</p>';
+        }
+    }
+
+    // ── Incoming requests (as owner) ──
+    if (listIncoming) {
+        try {
+            const res = await fetch('http://127.0.0.1:5000/api/v1/reservations/incoming', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            listIncoming.setAttribute('aria-busy', 'false');
+
+            if (!res.ok) throw new Error();
+            const reservations = await res.json();
+
+            if (reservations.length === 0) {
+                listIncoming.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📡</div>
+                        <p>No incoming requests. Your habitats await explorers.</p>
+                    </div>`;
+            } else {
+                listIncoming.innerHTML = '';
+                reservations.forEach(r => {
+                    const card = document.createElement('article');
+                    card.className = 'res-card';
+                    const isPending = r.status === 'pending';
+                    card.innerHTML = `
+                        <div class="res-card-body">
+                            <div class="res-card-title">
+                                <a href="place.html?id=${r.place_id}">${r.place_title || 'Unknown habitat'}</a>
+                                ${statusBadge(r.status)}
+                            </div>
+                            <div class="res-card-guest">Navigator: <strong>${r.guest_name || 'Unknown'}</strong></div>
+                            <div class="res-card-dates">
+                                <span>🚀 ${r.check_in}</span>
+                                <span class="res-arrow">→</span>
+                                <span>🛬 ${r.check_out}</span>
+                            </div>
+                            <div class="res-card-price">$${r.total_price} total</div>
+                        </div>
+                        ${isPending ? `
+                        <div class="res-card-actions">
+                            <button class="btn-confirm-res" onclick="confirmReservation('${r.id}', this)">Confirm</button>
+                            <button class="btn-reject-res"  onclick="rejectReservation('${r.id}', this)">Reject</button>
+                        </div>` : ''}
+                    `;
+                    listIncoming.appendChild(card);
+                });
+            }
+        } catch {
+            listIncoming.innerHTML = '<p class="loading-text">Unable to load incoming requests. Signal lost.</p>';
+        }
+    }
+}
+
+async function cancelReservation(id, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Cancelling…';
+    const token = getCookie('token');
+    const res = await fetch(`http://127.0.0.1:5000/api/v1/reservations/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+        showToast('Reservation cancelled.', 'info');
+        const card = btn.closest('.res-card');
+        if (card) {
+            card.querySelector('.res-status-badge').className = 'res-status-badge badge-cancelled';
+            card.querySelector('.res-status-badge').textContent = 'Cancelled';
+            btn.remove();
+        }
+    } else {
+        showToast('Could not cancel. Please retry.', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Cancel';
+    }
+}
+
+async function confirmReservation(id, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Confirming…';
+    const token = getCookie('token');
+    const res = await fetch(`http://127.0.0.1:5000/api/v1/reservations/${id}/confirm`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+        showToast('Reservation confirmed! The navigator has been notified.', 'success');
+        const card = btn.closest('.res-card');
+        if (card) {
+            card.querySelector('.res-status-badge').className = 'res-status-badge badge-confirmed';
+            card.querySelector('.res-status-badge').textContent = 'Confirmed';
+            card.querySelector('.res-card-actions').remove();
+        }
+    } else {
+        showToast('Could not confirm. Please retry.', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Confirm';
+    }
+}
+
+async function rejectReservation(id, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Rejecting…';
+    const token = getCookie('token');
+    const res = await fetch(`http://127.0.0.1:5000/api/v1/reservations/${id}/reject`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+        showToast('Reservation rejected.', 'info');
+        const card = btn.closest('.res-card');
+        if (card) {
+            card.querySelector('.res-status-badge').className = 'res-status-badge badge-cancelled';
+            card.querySelector('.res-status-badge').textContent = 'Cancelled';
+            card.querySelector('.res-card-actions').remove();
+        }
+    } else {
+        showToast('Could not reject. Please retry.', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Reject';
+    }
+}
+
 /* ── MARQUEE CAROUSEL ── */
 function buildMarquee(places) {
     const inner = document.getElementById('marquee-inner');
@@ -1162,6 +1471,76 @@ function initScrollReveal() {
     els.forEach(el => observer.observe(el));
 }
 
+/* ── RGPD — COOKIE CONSENT BANNER ── */
+function initCookieBanner() {
+    if (localStorage.getItem('hbnb-cookie-consent') === 'accepted') return;
+
+    const banner = document.createElement('div');
+    banner.id = 'cookie-banner';
+    banner.setAttribute('role', 'dialog');
+    banner.setAttribute('aria-label', 'Cookie consent');
+    banner.innerHTML = `
+        <div class="cookie-banner-content">
+            <p>
+                hbnb utilise un cookie d'authentification strictement nécessaire au fonctionnement du service.
+                Aucune donnée n'est partagée avec des tiers.
+                <a href="privacy.html" class="cookie-link">Politique de confidentialité</a>
+            </p>
+            <div class="cookie-banner-actions">
+                <a href="privacy.html" class="cookie-btn-secondary">En savoir plus</a>
+                <button class="cookie-btn-accept" id="cookie-accept-btn" aria-label="Accept cookies">Accepter</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(banner);
+
+    // Animate in
+    requestAnimationFrame(() => banner.classList.add('visible'));
+
+    document.getElementById('cookie-accept-btn').addEventListener('click', () => {
+        localStorage.setItem('hbnb-cookie-consent', 'accepted');
+        banner.classList.remove('visible');
+        setTimeout(() => banner.remove(), 350);
+    });
+}
+
+/* ── DELETE ACCOUNT ── */
+async function initDeleteAccount() {
+    const btn = document.getElementById('delete-account-btn');
+    if (!btn) return;
+
+    btn.addEventListener('click', async () => {
+        const confirmed = window.confirm(
+            'Supprimer définitivement votre compte ?\n\nToutes vos données (habitats, réservations, avis) seront effacées. Cette action est irréversible.'
+        );
+        if (!confirmed) return;
+
+        const token = getCookie('token');
+        const payload = getTokenPayload(token);
+        if (!payload?.sub) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Suppression…';
+
+        const res = await fetch(`http://127.0.0.1:5000/api/v1/users/${payload.sub}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+            showToast('Compte supprimé. Vous allez être déconnecté.', 'info', 3000);
+            setTimeout(() => {
+                document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                window.location.href = 'index.html';
+            }, 2000);
+        } else {
+            showToast('La suppression a échoué. Réessayez.', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Supprimer mon compte';
+        }
+    });
+}
+
 /* ── HEADER SCROLL STATE ── */
 function initHeaderScroll() {
     // Sur index, le logo animation contrôle le header — pas de scroll class
@@ -1176,6 +1555,7 @@ function initHeaderScroll() {
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', function () {
     loadHeaderFooter();
+    initCookieBanner();
     initFilters();
     initPlaceDetails();
     renderReviews();
@@ -1186,6 +1566,8 @@ document.addEventListener('DOMContentLoaded', function () {
     initRegisterForm();
     initProfileForm();
     initMyPlaces();
+    initMyReservations();
+    initDeleteAccount();
     initEditPlaceForm();
     initScrollReveal();
 

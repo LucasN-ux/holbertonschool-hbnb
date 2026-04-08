@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manage your habitat reservations and incoming booking requests.">
+    <title>My Reservations — hbnb</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div id="header"></div>
+    <main id="main-content" class="generic-main">
+
+        <div class="reservations-tabs" role="tablist" aria-label="Reservations view">
+            <button class="res-tab active" id="tab-mine" role="tab" aria-selected="true" aria-controls="panel-mine" onclick="switchTab('mine')">
+                My Bookings
+            </button>
+            <button class="res-tab" id="tab-incoming" role="tab" aria-selected="false" aria-controls="panel-incoming" onclick="switchTab('incoming')">
+                Incoming Requests
+            </button>
+        </div>
+
+        <section id="panel-mine" role="tabpanel" aria-labelledby="tab-mine">
+            <h1 class="section-title">My Bookings</h1>
+            <div id="my-reservations-list" aria-live="polite" aria-busy="true">
+                <div class="loading-state"><span class="spinner" aria-hidden="true"></span>Loading your bookings…</div>
+            </div>
+        </section>
+
+        <section id="panel-incoming" role="tabpanel" aria-labelledby="tab-incoming" hidden>
+            <h1 class="section-title">Incoming Requests</h1>
+            <p class="reservations-subtitle">Reservation requests for your habitats.</p>
+            <div id="incoming-reservations-list" aria-live="polite" aria-busy="true">
+                <div class="loading-state"><span class="spinner" aria-hidden="true"></span>Loading incoming requests…</div>
+            </div>
+        </section>
+
+    </main>
+    <div id="footer"></div>
+    <script src="scripts.js"></script>
+</body>
+</html>

@@ -9,11 +9,16 @@ from app.services.repositories.user_repository import UserRepository
 from app.services.repositories.place_repository import PlaceRepository
 from app.services.repositories.review_repository import ReviewRepository
 from app.services.repositories.amenity_repository import AmenityRepository
+from app.services.repositories.reservation_repository import (
+    ReservationRepository
+)
 from app.models.user import User
 from app.models.place import Place
 from app.models.review import Review
 from app.models.amenity import Amenity
+from app.models.reservation import Reservation
 from app import db
+from datetime import date
 
 
 class HBnBFacade:
@@ -22,6 +27,7 @@ class HBnBFacade:
         self.place_repo = PlaceRepository()
         self.review_repo = ReviewRepository()
         self.amenity_repo = AmenityRepository()
+        self.reservation_repo = ReservationRepository()
 
     def create_user(self, user_data, password):
         if not User.validate_email_format(user_data['email']):
@@ -249,3 +255,84 @@ class HBnBFacade:
             return False
         self.amenity_repo.delete(amenity_id)
         return True
+
+    # ── Reservations ──────────────────────────────────────────────
+
+    def create_reservation(self, guest_id, place_id, check_in_str, check_out_str):
+        from datetime import datetime
+        guest = self.user_repo.get(guest_id)
+        if not guest:
+            raise ValueError("User not found")
+
+        place = self.place_repo.get(place_id)
+        if not place:
+            raise ValueError("Place not found")
+
+        if place.owner_id == guest_id:
+            raise ValueError("You cannot reserve your own habitat")
+
+        try:
+            check_in  = datetime.strptime(check_in_str,  '%Y-%m-%d').date()
+            check_out = datetime.strptime(check_out_str, '%Y-%m-%d').date()
+        except ValueError:
+            raise ValueError("Dates must be in YYYY-MM-DD format")
+
+        today = date.today()
+        if check_in < today:
+            raise ValueError("Check-in date must be today or in the future")
+        if check_out <= check_in:
+            raise ValueError("Check-out must be after check-in")
+
+        nights = (check_out - check_in).days
+        total_price = round(nights * float(place.price), 2)
+
+        # Conflict check — only confirmed reservations block new ones
+        confirmed = self.reservation_repo.get_confirmed_for_place(place_id)
+        for r in confirmed:
+            if not (check_out <= r.check_in or check_in >= r.check_out):
+                raise ValueError(
+                    "These dates overlap with an existing confirmed reservation"
+                )
+
+        reservation = Reservation(
+            guest_id=guest_id,
+            place_id=place_id,
+            check_in=check_in,
+            check_out=check_out,
+            total_price=total_price,
+            status='pending',
+        )
+        self.reservation_repo.add(reservation)
+        return reservation
+
+    def get_reservation(self, reservation_id):
+        return self.reservation_repo.get(reservation_id)
+
+    def get_all_reservations(self):
+        return self.reservation_repo.get_all()
+
+    def get_reservations_by_guest(self, guest_id):
+        return self.reservation_repo.get_by_guest(guest_id)
+
+    def get_incoming_reservations(self, owner_id):
+        """Return all reservations for places owned by owner_id."""
+        places = self.place_repo.get_all()
+        owner_place_ids = {p.id for p in places if p.owner_id == owner_id}
+        all_res = self.reservation_repo.get_all()
+        return [r for r in all_res if r.place_id in owner_place_ids]
+
+    def confirm_reservation(self, reservation_id):
+        reservation = self.reservation_repo.get(reservation_id)
+        if not reservation:
+            return None
+        reservation.status = 'confirmed'
+        db.session.commit()
+        return reservation
+
+    def cancel_reservation(self, reservation_id):
+        reservation = self.reservation_repo.get(reservation_id)
+        if not reservation:
+            return None
+        reservation.status = 'cancelled'
+        db.session.commit()
+        return reservation

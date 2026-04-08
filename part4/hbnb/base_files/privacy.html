@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Politique de confidentialité de hbnb — vos droits RGPD, les données collectées et comment les exercer.">
+    <title>Politique de confidentialité — hbnb</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div id="header"></div>
+    <main id="main-content" class="generic-main">
+
+        <div class="privacy-page">
+
+            <h1 class="section-title">Politique de confidentialité</h1>
+            <p class="privacy-meta">Dernière mise à jour : 8 avril 2026 &nbsp;·&nbsp; Conforme au <strong>RGPD</strong> (Règlement (UE) 2016/679)</p>
+
+            <section class="privacy-section">
+                <h2>1. Responsable du traitement</h2>
+                <p><strong>hbnb — Galactic Habitat Registry</strong><br>
+                Projet Holberton School · Robin Allix &amp; Lucas Nevano<br>
+                Contact : <a href="mailto:contact@hbnb.io">contact@hbnb.io</a></p>
+            </section>
+
+            <section class="privacy-section">
+                <h2>2. Données collectées</h2>
+                <p>Dans le cadre de l'utilisation de la plateforme, nous collectons les données suivantes :</p>
+                <table class="privacy-table">
+                    <thead>
+                        <tr><th>Donnée</th><th>Finalité</th><th>Base légale</th><th>Durée de conservation</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Prénom, nom</td><td>Identification du compte</td><td>Exécution du contrat</td><td>Durée du compte + 30 jours</td></tr>
+                        <tr><td>Adresse e-mail</td><td>Authentification, communications</td><td>Exécution du contrat</td><td>Durée du compte + 30 jours</td></tr>
+                        <tr><td>Mot de passe (hashé)</td><td>Authentification sécurisée</td><td>Exécution du contrat</td><td>Durée du compte</td></tr>
+                        <tr><td>Annonces (habitats)</td><td>Publication sur la plateforme</td><td>Exécution du contrat</td><td>Durée du compte ou suppression manuelle</td></tr>
+                        <tr><td>Réservations</td><td>Gestion des séjours</td><td>Exécution du contrat</td><td>3 ans après la date de séjour</td></tr>
+                        <tr><td>Avis (mission logs)</td><td>Information des autres utilisateurs</td><td>Intérêt légitime</td><td>Durée du compte ou suppression manuelle</td></tr>
+                        <tr><td>Photos uploadées</td><td>Illustration des annonces</td><td>Exécution du contrat</td><td>Durée du compte ou suppression manuelle</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="privacy-section">
+                <h2>3. Cookies</h2>
+                <p>hbnb utilise <strong>un seul cookie</strong>, strictement nécessaire au fonctionnement du service :</p>
+                <table class="privacy-table">
+                    <thead>
+                        <tr><th>Nom</th><th>Type</th><th>Durée</th><th>Finalité</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>token</code></td>
+                            <td>Cookie de session (JWT)</td>
+                            <td>Session (supprimé à la déconnexion)</td>
+                            <td>Maintien de l'authentification — strictement nécessaire</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>Ce cookie ne contient aucune information de traçage. Il est supprimé à la déconnexion ou à la fermeture de la session. Aucun cookie analytique ou publicitaire n'est déposé.</p>
+            </section>
+
+            <section class="privacy-section">
+                <h2>4. Partage des données</h2>
+                <p>hbnb ne vend, ne loue et ne partage pas vos données personnelles avec des tiers à des fins commerciales. Aucun outil d'analyse tiers (Google Analytics, etc.) n'est intégré.</p>
+            </section>
+
+            <section class="privacy-section">
+                <h2>5. Vos droits (RGPD)</h2>
+                <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez des droits suivants :</p>
+                <ul class="privacy-list">
+                    <li><strong>Droit d'accès</strong> — Vous pouvez consulter vos données depuis votre profil.</li>
+                    <li><strong>Droit de rectification</strong> — Vous pouvez modifier votre prénom et nom depuis votre <a href="profile.html">profil</a>.</li>
+                    <li><strong>Droit à l'effacement (droit à l'oubli)</strong> — Vous pouvez supprimer définitivement votre compte depuis votre <a href="profile.html">profil</a> (section « Zone de danger »). Toutes vos données seront supprimées dans les 30 jours.</li>
+                    <li><strong>Droit à la portabilité</strong> — Pour obtenir une copie de vos données, contactez-nous à <a href="mailto:contact@hbnb.io">contact@hbnb.io</a>.</li>
+                    <li><strong>Droit d'opposition</strong> — Vous pouvez vous opposer à certains traitements en nous contactant.</li>
+                    <li><strong>Droit de réclamation</strong> — Vous pouvez déposer une plainte auprès de la <a href="https://www.cnil.fr" target="_blank" rel="noopener">CNIL</a>.</li>
+                </ul>
+                <p>Pour exercer vos droits : <a href="mailto:contact@hbnb.io">contact@hbnb.io</a></p>
+            </section>
+
+            <section class="privacy-section">
+                <h2>6. Sécurité des données</h2>
+                <p>Les mots de passe sont hachés avec <strong>bcrypt</strong> (facteur de coût élevé). Les communications entre le navigateur et le serveur sont chiffrées. Les tokens JWT ont une durée de vie limitée.</p>
+            </section>
+
+            <section class="privacy-section">
+                <h2>7. Modifications de cette politique</h2>
+                <p>Toute modification substantielle sera notifiée par une mise à jour de la date en haut de cette page. Nous vous encourageons à la consulter régulièrement.</p>
+            </section>
+
+        </div>
+    </main>
+    <div id="footer"></div>
+    <script src="scripts.js"></script>
+</body>
+</html>

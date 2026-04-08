@@ -1905,3 +1905,291 @@ header.scrolled .nav-hamburger { color: var(--text-secondary); }
     .admin-modal-actions { flex-direction: column-reverse; }
     .admin-modal-actions button { width: 100%; justify-content: center; }
 }
+
+/* ── 29. BOOKING — RESERVATION FORM ──────────────────────────── */
+.booking-reservation { margin-top: 0; }
+.booking-res-title {
+    font-size: .8125rem; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--text-secondary);
+    margin: 0 0 .875rem;
+}
+.booking-dates {
+    display: grid; grid-template-columns: 1fr 1fr; gap: .5rem .75rem;
+    margin-bottom: .75rem;
+}
+.booking-dates label {
+    grid-column: span 1; font-size: .75rem; font-weight: 600;
+    color: var(--text-secondary); margin-bottom: -.25rem;
+}
+.booking-dates input[type="date"] {
+    width: 100%; padding: .5rem .625rem; border-radius: var(--r-sm);
+    border: 1.5px solid var(--border); background: var(--bg);
+    color: var(--text-primary); font-size: .8125rem; font-family: inherit;
+    transition: border-color .18s;
+}
+.booking-dates input[type="date"]:focus {
+    outline: none; border-color: var(--sage-deep);
+    box-shadow: 0 0 0 3px rgba(155,196,188,.2);
+}
+.booking-total {
+    font-size: .875rem; color: var(--text-primary);
+    margin-bottom: .75rem; min-height: 1.25rem;
+    font-weight: 500;
+}
+.booking-total.error { color: #c0392b; }
+
+.btn-reserve {
+    display: block; width: 100%; padding: .75rem 1rem;
+    background: var(--olive); color: #fff;
+    border: none; border-radius: var(--r-sm);
+    font-size: .875rem; font-weight: 700; font-family: inherit;
+    cursor: pointer; text-align: center; text-decoration: none;
+    transition: background .18s, opacity .18s;
+}
+.btn-reserve:hover:not(:disabled) { background: var(--sage-deep); }
+.btn-reserve:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── 30. RESERVATIONS PAGE ───────────────────────────────────── */
+.reservations-tabs {
+    display: flex; gap: .5rem; margin-bottom: 2rem;
+    border-bottom: 1.5px solid var(--border); padding-bottom: 0;
+}
+.res-tab {
+    padding: .625rem 1.25rem; background: none; border: none;
+    font-size: .9375rem; font-weight: 600; font-family: inherit;
+    color: var(--text-secondary); cursor: pointer;
+    border-bottom: 2.5px solid transparent; margin-bottom: -1.5px;
+    transition: color .18s, border-color .18s;
+}
+.res-tab.active { color: var(--olive); border-bottom-color: var(--olive); }
+.res-tab:hover:not(.active) { color: var(--text-primary); }
+
+.reservations-subtitle {
+    font-size: .9375rem; color: var(--text-secondary);
+    margin: -.5rem 0 1.5rem;
+}
+
+/* Reservation card */
+.res-card {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 1rem; padding: 1.25rem 1.5rem;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--r-lg); margin-bottom: 1rem;
+    box-shadow: var(--sh-xs); transition: box-shadow .18s;
+}
+.res-card:hover { box-shadow: var(--sh-sm); }
+
+.res-card-body { flex: 1; min-width: 0; }
+
+.res-card-title {
+    display: flex; align-items: center; gap: .625rem;
+    flex-wrap: wrap; margin-bottom: .5rem;
+}
+.res-card-title a {
+    font-size: 1rem; font-weight: 700; color: var(--text-primary);
+    text-decoration: none;
+}
+.res-card-title a:hover { color: var(--olive); }
+
+.res-status-badge {
+    display: inline-block; padding: .2rem .6rem;
+    border-radius: var(--r-pill); font-size: .7rem;
+    font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+}
+.badge-pending   { background: rgba(248,196,54,.15); color: #b8860b; }
+.badge-confirmed { background: rgba(39,174,96,.12);  color: #1e7e40; }
+.badge-cancelled { background: rgba(192,57,43,.10);  color: #a03020; }
+
+.res-card-guest {
+    font-size: .875rem; color: var(--text-secondary);
+    margin-bottom: .375rem;
+}
+.res-card-dates {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .875rem; color: var(--text-secondary);
+    margin-bottom: .375rem;
+}
+.res-arrow { color: var(--text-dim); font-size: .75rem; }
+.res-card-price {
+    font-size: .9375rem; font-weight: 700; color: var(--text-primary);
+}
+
+.res-card-actions {
+    display: flex; flex-direction: column; gap: .5rem;
+    flex-shrink: 0;
+}
+.btn-confirm-res, .btn-reject-res, .btn-cancel-res {
+    padding: .5rem 1rem; border: none; border-radius: var(--r-sm);
+    font-size: .8125rem; font-weight: 700; font-family: inherit;
+    cursor: pointer; white-space: nowrap;
+    transition: opacity .18s;
+}
+.btn-confirm-res { background: var(--olive); color: #fff; }
+.btn-confirm-res:hover:not(:disabled) { background: var(--sage-deep); }
+.btn-reject-res  { background: transparent; color: #c0392b;
+                   border: 1.5px solid rgba(192,57,43,.35); }
+.btn-reject-res:hover:not(:disabled) { background: rgba(192,57,43,.07); }
+.btn-cancel-res  { background: transparent; color: var(--text-secondary);
+                   border: 1.5px solid var(--border); align-self: flex-start; }
+.btn-cancel-res:hover:not(:disabled) { border-color: var(--border-hover); color: var(--text-primary); }
+.btn-confirm-res:disabled,
+.btn-reject-res:disabled,
+.btn-cancel-res:disabled { opacity: .45; cursor: not-allowed; }
+
+@media (max-width: 600px) {
+    .res-card { flex-direction: column; }
+    .res-card-actions { flex-direction: row; }
+    .booking-dates { grid-template-columns: 1fr; }
+}
+
+/* ── 31. NAV USER BADGE ──────────────────────────────────────── */
+.nav-user-badge {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-size: .8125rem; font-weight: 600;
+    color: rgba(255,255,255,0.88);
+    white-space: nowrap; user-select: none;
+}
+header.header--visible .nav-user-badge,
+header.scrolled .nav-user-badge {
+    color: var(--text-secondary);
+}
+.nav-avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--sage-deep); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .75rem; font-weight: 700; flex-shrink: 0;
+}
+header.header--visible .nav-avatar,
+header.scrolled .nav-avatar {
+    background: var(--olive);
+}
+.mobile-user-name {
+    display: block; padding: .5rem 0;
+    font-size: .875rem; font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: .25rem;
+}
+
+/* ── 32. COOKIE CONSENT BANNER ───────────────────────────────── */
+#cookie-banner {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 9000;
+    background: var(--near-black); color: rgba(255,255,255,0.88);
+    padding: 1rem 1.5rem;
+    transform: translateY(100%);
+    transition: transform .35s var(--ease-out);
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.22);
+}
+#cookie-banner.visible { transform: translateY(0); }
+
+.cookie-banner-content {
+    max-width: var(--content-w); margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.5rem; flex-wrap: wrap;
+}
+.cookie-banner-content p {
+    font-size: .875rem; color: rgba(255,255,255,0.75);
+    flex: 1; min-width: 200px;
+}
+.cookie-link { color: var(--sage); text-decoration: underline; }
+.cookie-link:hover { color: #fff; }
+.cookie-banner-actions {
+    display: flex; align-items: center; gap: .75rem; flex-shrink: 0;
+}
+.cookie-btn-secondary {
+    font-size: .8125rem; font-weight: 500;
+    color: rgba(255,255,255,0.55); text-decoration: underline;
+    white-space: nowrap;
+}
+.cookie-btn-secondary:hover { color: rgba(255,255,255,0.88); }
+.cookie-btn-accept {
+    padding: .5rem 1.25rem; border-radius: var(--r-sm);
+    background: var(--sage-deep); color: #fff;
+    border: none; font-size: .875rem; font-weight: 700;
+    font-family: inherit; cursor: pointer; white-space: nowrap;
+    transition: background .18s;
+}
+.cookie-btn-accept:hover { background: var(--olive); }
+
+@media (max-width: 600px) {
+    .cookie-banner-content { flex-direction: column; align-items: flex-start; gap: .75rem; }
+    .cookie-banner-actions { width: 100%; }
+    .cookie-btn-accept { flex: 1; text-align: center; }
+}
+
+/* ── 33. PROFILE — DANGER ZONE ───────────────────────────────── */
+.profile-danger-zone {
+    margin-top: 2.5rem; padding: 1.5rem;
+    border: 1.5px solid rgba(192,57,43,0.28);
+    border-radius: var(--r-lg);
+    background: rgba(192,57,43,0.04);
+}
+.danger-zone-title {
+    font-size: 1rem; font-weight: 700; color: #c0392b;
+    margin-bottom: .625rem;
+}
+.danger-zone-desc {
+    font-size: .875rem; color: var(--text-secondary);
+    margin-bottom: 1.25rem; line-height: 1.6;
+}
+.danger-zone-desc a { color: var(--olive); text-decoration: underline; }
+.btn-delete-account {
+    padding: .6rem 1.25rem; border-radius: var(--r-sm);
+    background: transparent; color: #c0392b;
+    border: 1.5px solid rgba(192,57,43,0.45);
+    font-size: .875rem; font-weight: 700; font-family: inherit;
+    cursor: pointer; transition: background .18s, border-color .18s;
+}
+.btn-delete-account:hover { background: rgba(192,57,43,.08); border-color: #c0392b; }
+.btn-delete-account:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── 34. PRIVACY POLICY PAGE ─────────────────────────────────── */
+.privacy-page { max-width: 780px; margin: 0 auto; padding: 2rem 0 4rem; }
+.privacy-meta {
+    font-size: .875rem; color: var(--text-secondary);
+    margin: -.5rem 0 2rem; padding-bottom: 1.5rem;
+    border-bottom: 1.5px solid var(--border);
+}
+.privacy-section {
+    margin-bottom: 2.25rem;
+}
+.privacy-section h2 {
+    font-size: 1.0625rem; font-weight: 700; color: var(--text-primary);
+    margin-bottom: .75rem;
+}
+.privacy-section p, .privacy-section li {
+    font-size: .9375rem; color: var(--text-secondary);
+    line-height: 1.7;
+}
+.privacy-section a { color: var(--olive); text-decoration: underline; }
+.privacy-list {
+    list-style: none; padding: 0; margin: .75rem 0;
+    display: flex; flex-direction: column; gap: .625rem;
+}
+.privacy-list li { padding-left: 1.25rem; position: relative; }
+.privacy-list li::before {
+    content: '→'; position: absolute; left: 0;
+    color: var(--sage-deep); font-size: .875rem;
+}
+.privacy-table {
+    width: 100%; border-collapse: collapse;
+    font-size: .8125rem; margin: .75rem 0;
+}
+.privacy-table th, .privacy-table td {
+    padding: .6rem .75rem; text-align: left;
+    border: 1px solid var(--border);
+}
+.privacy-table th {
+    background: var(--bg-2); font-weight: 700;
+    color: var(--text-primary); font-size: .75rem;
+    text-transform: uppercase; letter-spacing: .05em;
+}
+.privacy-table td { color: var(--text-secondary); }
+.privacy-table code {
+    background: var(--bg-2); padding: .1rem .35rem;
+    border-radius: 3px; font-size: .8rem;
+}
+@media (max-width: 600px) {
+    .privacy-table { font-size: .75rem; }
+    .privacy-table th, .privacy-table td { padding: .4rem .5rem; }
+}
