@@ -19,11 +19,13 @@ def allowed_file(filename):
 
 
 def save_file(file):
+    from flask import request as flask_request
     ext = file.filename.rsplit('.', 1)[1].lower()
     filename = f"{uuid.uuid4().hex}.{ext}"
     filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
-    return f'http://127.0.0.1:5000/uploads/{filename}'
+    base = flask_request.host_url.rstrip('/')
+    return f'{base}/uploads/{filename}'
 
 
 @upload_bp.route('/api/v1/upload', methods=['POST'])

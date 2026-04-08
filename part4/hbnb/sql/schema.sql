@@ -1,6 +1,7 @@
 -- HBnB database schema
 
 DROP TABLE IF EXISTS place_amenity;
+DROP TABLE IF EXISTS reservations;
 DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS places;
 DROP TABLE IF EXISTS amenities;
@@ -71,6 +72,32 @@ CREATE TABLE amenities (
     name VARCHAR(255) NOT NULL UNIQUE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE reservations (
+    id CHAR(36) PRIMARY KEY,
+    guest_id CHAR(36) NOT NULL,
+    place_id CHAR(36) NOT NULL,
+    check_in DATE NOT NULL,
+    check_out DATE NOT NULL,
+    total_price DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_reservations_guest
+        FOREIGN KEY (guest_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_reservations_place
+        FOREIGN KEY (place_id) REFERENCES places(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT chk_reservations_checkout
+        CHECK (check_out > check_in),
+
+    CONSTRAINT chk_reservations_status
+        CHECK (status IN ('pending', 'confirmed', 'cancelled'))
 );
 
 CREATE TABLE place_amenity (

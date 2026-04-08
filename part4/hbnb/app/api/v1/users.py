@@ -94,12 +94,13 @@ class UserResource(Resource):
     @jwt_required()
     @api.doc(security='Bearer Auth')
     @api.response(200, 'User deleted successfully')
-    @api.response(403, 'Admin access required')
+    @api.response(403, 'Unauthorized action')
     @api.response(404, 'User not found')
     def delete(self, user_id):
-        """Delete a user (admin only)"""
-        if not _is_admin():
-            return {'error': 'Admin access required'}, 403
+        """Delete a user (admin, or the user themselves)"""
+        current_user = get_jwt_identity()
+        if not _is_admin() and user_id != current_user:
+            return {'error': 'Unauthorized action'}, 403
         deleted = facade.delete_user(user_id)
         if not deleted:
             return {'error': 'User not found'}, 404
