@@ -2,7 +2,7 @@
 
 > *Galactic Habitat Registry — a full-stack Airbnb-inspired web application built progressively across four parts.*
 
-**hbnb** (Habitat Beyond New Borders) is an interstellar lodging platform where explorers across the universe can discover, list, and review extraordinary habitats. Built as a Holberton School end-to-end project, it covers every layer of modern web development: system design, backend API, database persistence, authentication, and a complete frontend.
+**hbnb** (Habitat Beyond New Borders) is an interstellar lodging platform where explorers across the universe can discover, list, and review extraordinary habitats. Built as a Holberton School end-to-end project, it covers every layer of modern web development: system design, backend API, database persistence, authentication, reservations, and a complete frontend.
 
 ---
 
@@ -269,7 +269,7 @@ python run.py
 
 **Goal:** Build a complete, deployable web application on top of the Part 3 API.
 
-Part 4 adds a fully interactive frontend — pure HTML, CSS, and Vanilla JavaScript. The result is a deployable full-stack application with an immersive space-themed interface.
+Part 4 adds a fully interactive frontend — pure HTML, CSS, and Vanilla JavaScript — along with a reservation system and RGPD compliance. The result is a deployable full-stack application with an immersive space-themed interface.
 
 → **[Full Part 4 documentation](part4/README.md)**
 
@@ -301,10 +301,13 @@ Part 4 adds a fully interactive frontend — pure HTML, CSS, and Vanilla JavaScr
 
 - **Interactive catalog** — live search by designation, price filter, sort by name or colony
 - **Multi-photo upload** — up to 10 images per habitat, served directly by Flask (`/uploads/`)
-- **JWT auth flow** — login, register, protected routes, auto-redirect for admins
+- **JWT auth flow** — login, register, protected routes, username displayed in nav dropdown
+- **Reservation system** — book habitats with date pickers, owner confirms or rejects, conflict detection
 - **Admin control room** — full CRUD panel for all entities, connected live to the API
 - **Responsive design** — mobile-first, hamburger drawer menu, touch-optimized (44px targets)
 - **GSAP animations** — hero wordmark scrolls from full-screen to header on scroll
+- **Dual-row marquee carousel** — two rows of portrait cards scrolling in opposite directions
+- **RGPD/GDPR compliance** — cookie consent banner, privacy policy page, right to erasure
 - **Space narrative** — every word of copy is in-universe (habitats, keepers, mission logs, cycle rates…)
 
 ### Project Structure
@@ -320,39 +323,45 @@ part4/hbnb/
 │   │       ├── places.py        # CRUD /api/v1/places
 │   │       ├── reviews.py       # CRUD /api/v1/reviews
 │   │       ├── amenities.py     # CRUD /api/v1/amenities
+│   │       ├── reservations.py  # Reservation lifecycle
 │   │       └── upload.py        # POST /api/v1/upload (multipart)
 │   ├── models/
 │   │   ├── base.py
 │   │   ├── user.py
-│   │   ├── place.py
+│   │   ├── place.py             # photos as JSON array
 │   │   ├── review.py
 │   │   ├── amenity.py
+│   │   ├── reservation.py       # guest, place, dates, status
 │   │   └── association.py       # place_amenity M2M table
 │   ├── services/
 │   │   └── facade.py            # Business logic layer
 │   └── persistence/
 │       └── repositories/        # Repository pattern over SQLAlchemy
-├── base_files/                  # Frontend (zero dependencies)
-│   ├── index.html               # Home — hero, features, explore catalog
-│   ├── place.html               # Habitat detail + mission logs
+├── base_files/                  # Frontend (zero dependencies except GSAP CDN)
+│   ├── index.html               # Home — hero, features, marquee, explore catalog
+│   ├── place.html               # Habitat detail + gallery + mission logs + booking
 │   ├── login.html               # Access portal + enlistment form
+│   ├── register.html            # Enlistment form (standalone)
 │   ├── my_places.html           # Navigator's registered stations
+│   ├── my_reservations.html     # My bookings + incoming requests
 │   ├── add_place.html           # Register a new habitat
 │   ├── edit_place.html          # Modify existing habitat
 │   ├── add_review.html          # File a mission log
-│   ├── profile.html             # Navigator file
+│   ├── profile.html             # Navigator file + danger zone
 │   ├── admin.html               # Control room (admin only)
 │   ├── how_it_works.html        # Mission briefing
 │   ├── trust_safety.html        # Galactic protection protocol
+│   ├── privacy.html             # Privacy policy (RGPD/GDPR)
 │   ├── header.html              # Dynamic header (injected via JS)
 │   ├── footer.html              # Dynamic footer
-│   ├── scripts.js               # All frontend logic (~1200 lines)
-│   ├── styles.css               # Design system (~1900 lines)
+│   ├── scripts.js               # All frontend logic (~1675 lines)
+│   ├── styles.css               # Design system (~2358 lines)
 │   └── images/
 │       └── no_picture.jpg       # Default habitat image
 ├── sql/
 │   ├── schema.sql               # Database DDL
 │   └── enter_data.sql           # Seed data
+├── seed_data.py                 # Python seeder — 10 users + 20 diverse places
 ├── config.py
 ├── run.py
 └── requirements.txt
@@ -367,8 +376,8 @@ part4/hbnb/
 | `POST` | `/api/v1/users/` | Create user | ✗ |
 | `GET` | `/api/v1/users/<id>` | Get user | JWT |
 | `PUT` | `/api/v1/users/<id>` | Update user | Owner / Admin |
-| `DELETE` | `/api/v1/users/<id>` | Delete user | Admin |
-| `GET` | `/api/v1/places/` | List all habitats | JWT |
+| `DELETE` | `/api/v1/users/<id>` | Delete user | Owner / Admin |
+| `GET` | `/api/v1/places/` | List all habitats | ✗ |
 | `POST` | `/api/v1/places/` | Create habitat | JWT |
 | `GET` | `/api/v1/places/<id>` | Get habitat detail | ✗ |
 | `PUT` | `/api/v1/places/<id>` | Update habitat | Owner / Admin |
@@ -377,6 +386,12 @@ part4/hbnb/
 | `POST` | `/api/v1/reviews/` | File mission log | JWT |
 | `PUT` | `/api/v1/reviews/<id>` | Update log | Owner / Admin |
 | `DELETE` | `/api/v1/reviews/<id>` | Delete log | Owner / Admin |
+| `POST` | `/api/v1/reservations/` | Book a habitat | JWT |
+| `GET` | `/api/v1/reservations/mine` | My bookings | JWT |
+| `GET` | `/api/v1/reservations/incoming` | Incoming requests (owner) | JWT |
+| `DELETE` | `/api/v1/reservations/<id>` | Cancel reservation | JWT |
+| `PUT` | `/api/v1/reservations/<id>/confirm` | Confirm reservation | Place owner |
+| `PUT` | `/api/v1/reservations/<id>/reject` | Reject reservation | Place owner |
 | `GET` | `/api/v1/amenities/` | List systems | ✗ |
 | `POST` | `/api/v1/amenities/` | Create system | Admin |
 | `PUT` | `/api/v1/amenities/<id>` | Update system | Admin |
@@ -428,9 +443,15 @@ python3 -m http.server 8080
 ### Seed the database
 
 ```bash
+# SQL seed files
 sqlite3 instance/development.db < sql/schema.sql
 sqlite3 instance/development.db < sql/enter_data.sql
+
+# Or use the Python seeder (10 users + 20 places with photos)
+python seed_data.py
 ```
+
+Default admin account: `admin@hbnb.io` / `Admin1234!`
 
 ---
 
@@ -479,6 +500,7 @@ holbertonschool-hbnb/
 │   │   ├── app/                  # Flask backend (API + models + services)
 │   │   ├── base_files/           # Frontend (HTML · CSS · JS)
 │   │   ├── sql/                  # Database schema & seed data
+│   │   ├── seed_data.py          # Python seeder
 │   │   ├── config.py
 │   │   ├── run.py
 │   │   └── requirements.txt
