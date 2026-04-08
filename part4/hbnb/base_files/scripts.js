@@ -1491,13 +1491,26 @@ async function rejectReservation(id, btn) {
 
 /* ── MARQUEE CAROUSEL ── */
 function buildMarquee(places) {
-    const inner = document.getElementById('marquee-inner');
-    if (!inner || places.length === 0) return;
+    const row1 = document.getElementById('marquee-inner-1');
+    const row2 = document.getElementById('marquee-inner-2');
+    if ((!row1 && !row2) || places.length === 0) return;
 
-    // Use all places, minimum 8 cards — repeat if needed
-    const pool = places.length < 8
-        ? [...places, ...places, ...places].slice(0, Math.max(places.length * 3, 8))
-        : places;
+    // Ensure enough cards for a seamless loop (min 8 per row)
+    function buildPool(src) {
+        let pool = [...src];
+        while (pool.length < 8) pool = [...pool, ...src];
+        return pool;
+    }
+
+    // Shuffle a copy for variety between rows
+    function shuffled(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
 
     const makeCard = (place) => {
         let photos = [];
@@ -1508,25 +1521,34 @@ function buildMarquee(places) {
         const a = document.createElement('a');
         a.href = `place.html?id=${place.id}`;
         a.className = 'marquee-card';
-        a.setAttribute('aria-label', `${place.title}${price ? ', ' + price + ' per night' : ''}`);
+        a.setAttribute('aria-label', `${place.title}${price ? ', ' + price + ' / cycle' : ''}`);
+        a.setAttribute('tabindex', '-1');
 
         a.innerHTML = `
-            ${photo
-                ? `<img src="${photo}" alt="${place.title}" loading="lazy">`
-                : `<div class="marquee-card-no-photo" aria-hidden="true"><img src="images/no_picture.jpg" alt="No visual scan" style="width:100%;height:100%;object-fit:cover;"></div>`}
+            <div class="marquee-card__img">
+                ${photo
+                    ? `<img src="${photo}" alt="${place.title}" loading="lazy">`
+                    : `<img src="images/no_picture.jpg" alt="No visual scan" loading="lazy">`}
+            </div>
             <div class="marquee-card__overlay" aria-hidden="true"></div>
             <div class="marquee-card__info">
-                <div class="marquee-card__title">${place.title}</div>
-                ${price ? `<div class="marquee-card__price"><strong>${price}</strong> / night</div>` : ''}
+                <p class="marquee-card__title">${place.title}</p>
+                ${price ? `<span class="marquee-card__price">${price} <span class="marquee-card__cycle">/ cycle</span></span>` : ''}
             </div>
         `;
         return a;
     };
 
-    // First pass
-    pool.forEach(p => inner.appendChild(makeCard(p)));
-    // Duplicate for seamless loop
-    pool.forEach(p => inner.appendChild(makeCard(p)));
+    const fillRow = (container, pool) => {
+        if (!container) return;
+        const items = buildPool(pool);
+        // Two passes for seamless infinite loop
+        items.forEach(p => container.appendChild(makeCard(p)));
+        items.forEach(p => container.appendChild(makeCard(p)));
+    };
+
+    fillRow(row1, places);
+    fillRow(row2, shuffled(places));
 }
 
 /* ── SCROLL REVEAL (IntersectionObserver) ── */

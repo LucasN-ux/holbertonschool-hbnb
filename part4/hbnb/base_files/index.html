@@ -51,10 +51,17 @@
     </section>
 
     <!-- ── MARQUEE CAROUSEL ──────────────────────────── -->
-    <section class="s-marquee" aria-hidden="true">
-        <div class="s-marquee__track">
-            <div class="s-marquee__inner" id="marquee-inner">
-                <!-- populated by JS -->
+    <section class="s-marquee" aria-label="Featured habitats">
+        <div class="s-marquee__header" data-reveal>
+            <span class="s-marquee__eyebrow">Across the galaxy</span>
+            <h2 class="s-marquee__title">Featured <em>habitats</em></h2>
+        </div>
+        <div class="s-marquee__rows">
+            <div class="s-marquee__track">
+                <div class="s-marquee__inner" id="marquee-inner-1"><!-- JS --></div>
+            </div>
+            <div class="s-marquee__track s-marquee__track--reverse">
+                <div class="s-marquee__inner" id="marquee-inner-2"><!-- JS --></div>
             </div>
         </div>
     </section>
