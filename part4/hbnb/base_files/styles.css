@@ -178,7 +178,6 @@ header.scrolled .header-home:hover {
     font-size: 1.375rem;
     font-weight: 700;
     letter-spacing: 0.18em;
-    /* margin-right compense le letter-spacing trailing sans affecter le clip */
     margin-right: -0.18em;
     text-transform: uppercase;
     line-height: 1;
@@ -1276,7 +1275,6 @@ form p a:hover { color: var(--text-primary); }
     padding: 10px;
     position: relative;
     z-index: 1010;
-    flex-shrink: 0;
     color: rgba(255,255,255,0.80);
     transition: color var(--t);
 }
@@ -2042,33 +2040,118 @@ header.scrolled .nav-hamburger { color: var(--text-secondary); }
     .booking-dates { grid-template-columns: 1fr; }
 }
 
-/* ── 31. NAV USER BADGE ──────────────────────────────────────── */
-.nav-user-badge {
+/* ── 31. NAV DROPDOWN ────────────────────────────────────────── */
+.nav-dropdown {
+    position: relative;
+}
+
+/* Trigger button */
+.nav-dd-trigger {
     display: inline-flex; align-items: center; gap: .4rem;
-    font-size: .8125rem; font-weight: 600;
-    color: rgba(255,255,255,0.88);
-    white-space: nowrap; user-select: none;
+    padding: .3rem .5rem .3rem .3rem;
+    border-radius: var(--r-pill);
+    border: 1px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.10);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    cursor: pointer; font-family: inherit;
+    transition: background var(--t), border-color var(--t);
 }
-header.header--visible .nav-user-badge,
-header.scrolled .nav-user-badge {
-    color: var(--text-secondary);
+.nav-dd-trigger:hover {
+    background: rgba(255,255,255,0.20);
+    border-color: rgba(255,255,255,0.60);
 }
+header.header--visible .nav-dd-trigger,
+header.scrolled .nav-dd-trigger {
+    border-color: var(--border-hover);
+    background: transparent;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+header.header--visible .nav-dd-trigger:hover,
+header.scrolled .nav-dd-trigger:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-strong);
+}
+
+/* Avatar circle */
 .nav-avatar {
     width: 26px; height: 26px; border-radius: 50%;
     background: var(--sage-deep); color: #fff;
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: .75rem; font-weight: 700; flex-shrink: 0;
+    font-size: .6875rem; font-weight: 800; flex-shrink: 0;
+    letter-spacing: 0;
 }
 header.header--visible .nav-avatar,
-header.scrolled .nav-avatar {
-    background: var(--olive);
+header.scrolled .nav-avatar { background: var(--olive); }
+
+/* First name label */
+.nav-dd-name {
+    font-size: .8125rem; font-weight: 600;
+    color: rgba(255,255,255,0.88); white-space: nowrap;
+    max-width: 90px; overflow: hidden; text-overflow: ellipsis;
 }
+header.header--visible .nav-dd-name,
+header.scrolled .nav-dd-name { color: var(--text-secondary); }
+
+/* Chevron */
+.nav-chevron {
+    color: rgba(255,255,255,0.55); flex-shrink: 0;
+    transition: transform .2s var(--ease);
+}
+header.header--visible .nav-chevron,
+header.scrolled .nav-chevron { color: var(--text-muted); }
+.nav-dropdown.open .nav-chevron { transform: rotate(180deg); }
+
+/* Dropdown menu panel — appended to <body> via JS, root stacking context */
+.nav-dd-menu {
+    position: fixed;
+    min-width: 200px;
+    background: #111110;
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: var(--r-lg);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.55);
+    padding: .375rem;
+    display: none;
+    flex-direction: column;
+    z-index: 9999;
+}
+.nav-dropdown.open .nav-dd-menu { display: flex; }
+
+.nav-dd-menu a,
+.nav-dd-menu .nav-dd-logout {
+    display: block; width: 100%;
+    padding: .6rem .9rem;
+    border-radius: var(--r-sm);
+    font-size: .875rem; font-weight: 500;
+    color: rgba(255,255,255,0.72);
+    text-decoration: none; text-align: left;
+    background: none; border: none; cursor: pointer;
+    font-family: inherit;
+    transition: background var(--t), color var(--t);
+}
+.nav-dd-menu a:hover,
+.nav-dd-menu .nav-dd-logout:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+}
+.nav-dd-menu .nav-dd-logout {
+    color: rgba(220,80,70,0.85);
+}
+.nav-dd-menu .nav-dd-logout:hover {
+    background: rgba(192,57,43,0.15);
+    color: #e05545;
+}
+.nav-sep {
+    border: none; border-top: 1px solid rgba(255,255,255,0.08);
+    margin: .25rem 0;
+}
+
+/* Mobile menu username */
 .mobile-user-name {
     display: block; padding: .5rem 0;
     font-size: .875rem; font-weight: 600;
-    color: rgba(255,255,255,0.55);
+    color: rgba(255,255,255,0.45);
     border-bottom: 1px solid rgba(255,255,255,0.08);
-    margin-bottom: .25rem;
+    margin-bottom: .25rem; user-select: none;
 }
 
 /* ── 32. COOKIE CONSENT BANNER ───────────────────────────────── */

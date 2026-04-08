@@ -229,28 +229,44 @@ function checkAuthentication() {
         const isAdmin = payload && payload.is_admin;
 
         const firstName = (payload && payload.first_name) ? payload.first_name : '';
-        const userLabel = firstName
-            ? `<span class="nav-user-badge" aria-label="Logged in as ${firstName}"><span class="nav-avatar" aria-hidden="true">${firstName[0].toUpperCase()}</span>${firstName}</span>`
-            : '';
+        const initial  = firstName ? firstName[0].toUpperCase() : '?';
+
+        const adminLinks = `
+            <a href="admin.html" role="menuitem">⚙ Control Room</a>
+            <hr class="nav-sep" role="separator">
+            <button class="nav-dd-logout" onclick="logout()" role="menuitem">Logout</button>`;
+        const userLinks = `
+            <a href="my_places.html" role="menuitem">My Stations</a>
+            <a href="my_reservations.html" role="menuitem">My Reservations</a>
+            <a href="profile.html" role="menuitem">My Profile</a>
+            <hr class="nav-sep" role="separator">
+            <button class="nav-dd-logout" onclick="logout()" role="menuitem">Logout</button>`;
 
         if (loginLink) {
-            loginLink.outerHTML = isAdmin
-                ? `${userLabel}
-                   <a href="admin.html" class="btn-outline">Control Room</a>
-                   <button class="btn-primary" onclick="logout()" aria-label="Logout from account">Logout</button>`
-                : `${userLabel}
-                   <a href="my_places.html" class="btn-outline">My Stations</a>
-                   <a href="my_reservations.html" class="btn-outline">My Reservations</a>
-                   <a href="profile.html" class="btn-outline">My Profile</a>
-                   <button class="btn-primary" onclick="logout()" aria-label="Logout from account">Logout</button>`;
+            loginLink.outerHTML = `
+                <div class="nav-dropdown" id="nav-dropdown">
+                    <button class="nav-dd-trigger" id="nav-dd-trigger"
+                        aria-haspopup="true" aria-expanded="false"
+                        aria-label="Account menu — ${firstName || 'Navigator'}">
+                        <span class="nav-avatar">${initial}</span>
+                        ${firstName ? `<span class="nav-dd-name">${firstName}</span>` : ''}
+                        <svg class="nav-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                            <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <div class="nav-dd-menu" id="nav-dd-menu" role="menu" aria-hidden="true">
+                        ${isAdmin ? adminLinks : userLinks}
+                    </div>
+                </div>`;
+            initNavDropdown();
         }
 
         if (mobileLinks) {
             mobileLinks.innerHTML = isAdmin
-                ? `${firstName ? `<span class="mobile-user-name">👤 ${firstName}</span>` : ''}
+                ? `${firstName ? `<span class="mobile-user-name">◉ ${firstName}</span>` : ''}
                    <a href="admin.html">Control Room</a>
                    <a href="#" onclick="logout();return false;">Logout</a>`
-                : `${firstName ? `<span class="mobile-user-name">👤 ${firstName}</span>` : ''}
+                : `${firstName ? `<span class="mobile-user-name">◉ ${firstName}</span>` : ''}
                    <a href="my_places.html">My Stations</a>
                    <a href="my_reservations.html">My Reservations</a>
                    <a href="profile.html">My Profile</a>
@@ -259,6 +275,63 @@ function checkAuthentication() {
     }
 
     fetchPlaces(token);
+}
+
+function initNavDropdown() {
+    const trigger = document.getElementById('nav-dd-trigger');
+    const menu    = document.getElementById('nav-dd-menu');
+    const wrapper = document.getElementById('nav-dropdown');
+    if (!trigger || !menu) return;
+
+    // Move menu to <body> so it's in the root stacking context
+    // (avoids header's stacking context capping z-index)
+    document.body.appendChild(menu);
+
+    function positionMenu() {
+        const rect = trigger.getBoundingClientRect();
+        menu.style.top  = (rect.bottom + 6) + 'px';
+        menu.style.right = (window.innerWidth - rect.right) + 'px';
+        menu.style.left = 'auto';
+    }
+
+    function open() {
+        positionMenu();
+        menu.style.display = 'flex';
+        wrapper.classList.add('open');
+        trigger.setAttribute('aria-expanded', 'true');
+        menu.setAttribute('aria-hidden', 'false');
+    }
+    function close() {
+        menu.style.display = 'none';
+        wrapper.classList.remove('open');
+        trigger.setAttribute('aria-expanded', 'false');
+        menu.setAttribute('aria-hidden', 'true');
+    }
+
+    trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.style.display === 'flex' ? close() : open();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target) && !menu.contains(e.target)) close();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') close();
+    });
+
+    menu.querySelectorAll('a, button').forEach(el => {
+        el.addEventListener('click', close);
+    });
+
+    // Reposition on scroll/resize while open
+    window.addEventListener('scroll', () => {
+        if (menu.style.display === 'flex') positionMenu();
+    }, { passive: true });
+    window.addEventListener('resize', () => {
+        if (menu.style.display === 'flex') positionMenu();
+    }, { passive: true });
 }
 
 /* ── PLACES ── */
